@@ -4,6 +4,7 @@ Model: MedVLM-7B v2.1 · CheXpert + MIMIC-CXR trained
 """
 
 import io
+import os
 from fastapi import FastAPI, UploadFile, File, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
@@ -18,24 +19,19 @@ app = FastAPI(
 )
 
 # ── CORS Middleware ──────────────────────────────────────────────────────────
+# In production, set ALLOWED_ORIGINS env var to your Vercel frontend URL.
+# Example: ALLOWED_ORIGINS=https://medvlm.vercel.app
+# Leave unset locally to allow all origins during development.
+_raw_origins = os.getenv("ALLOWED_ORIGINS", "*")
+_allow_origins = [o.strip() for o in _raw_origins.split(",")] if _raw_origins != "*" else ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=_allow_origins,
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "Accept"],
 )
-
-
-# ── Explicit CORS headers on every response ─────────────────────────────────
-@app.middleware("http")
-async def add_cors_header(request: Request, call_next):
-    response = await call_next(request)
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Methods"] = "*"
-    response.headers["Access-Control-Allow-Headers"] = "*"
-    response.headers["X-Model-Version"] = "MedVLM-7B-v2.1"
-    return response
 
 
 # ── OPTIONS preflight handler (catch-all) ────────────────────────────────────
@@ -45,8 +41,8 @@ async def options_handler(full_path: str):
         content={"detail": "OK"},
         headers={
             "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "*",
-            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Accept",
         },
     )
 
@@ -54,7 +50,7 @@ async def options_handler(full_path: str):
 # ── Health Check ─────────────────────────────────────────────────────────────
 @app.get("/health")
 async def health_check():
-    return {"status": "ok"}
+    return {"status": "ok", "model": "MedVLM-7B v2.1.3"}
 
 
 # ── Analyze X-Ray ───────────────────────────────────────────────────────────
@@ -63,10 +59,7 @@ async def analyze(image: UploadFile = File(...)):
     """Accept a chest X-ray image and return AI-generated analysis."""
     image_bytes = await image.read()
     result = analyze_xray(image_bytes)
-    return JSONResponse(
-        content=result,
-        headers={"Access-Control-Allow-Origin": "*"},
-    )
+    return JSONResponse(content=result)
 
 
 # ── Generate PDF Report ─────────────────────────────────────────────────────
@@ -80,7 +73,6 @@ async def generate_pdf(report: ReportResponse):
         media_type="application/pdf",
         headers={
             "Content-Disposition": "attachment; filename=MedVLM_Report.pdf",
-            "Access-Control-Allow-Origin": "*",
         },
     )
 
@@ -88,4 +80,6 @@ async def generate_pdf(report: ReportResponse):
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
+
