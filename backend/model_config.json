@@ -1,0 +1,40 @@
+{
+  "model_type": "medvlm",
+  "architectures": ["MedVLMForRadiologyReport"],
+  "model_version": "2.1.3",
+  "hidden_size": 4096,
+  "intermediate_size": 11008,
+  "num_hidden_layers": 32,
+  "num_attention_heads": 32,
+  "num_key_value_heads": 8,
+  "vision_encoder": {
+    "type": "ViT-L/16",
+    "image_size": 512,
+    "patch_size": 16,
+    "hidden_size": 1024,
+    "num_layers": 24,
+    "num_heads": 16
+  },
+  "clinical_decoder": {
+    "type": "CLD-v3",
+    "vocab_size": 32768,
+    "max_position_embeddings": 2048,
+    "rope_theta": 10000.0
+  },
+  "torch_dtype": "float16",
+  "quantization": "int8",
+  "transformers_version": "4.36.0",
+  "training_config": {
+    "learning_rate": 2e-5,
+    "weight_decay": 0.01,
+    "warmup_steps": 500,
+    "total_steps": 125000,
+    "batch_size": 32,
+    "gradient_accumulation": 4
+  },
+  "supported_tasks": [
+    "chest-xray-classification",
+    "radiology-report-generation",
+    "pathology-detection"
+  ]
+}

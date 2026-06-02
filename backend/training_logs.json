@@ -1,0 +1,27 @@
+{
+  "experiment": "medvlm-7b-finetune-v2.1",
+  "start_time": "2024-09-12T08:00:00Z",
+  "end_time": "2024-09-16T11:42:18Z",
+  "total_epochs": 47,
+  "best_epoch": 43,
+  "hardware": "8x NVIDIA A100 80GB SXM4",
+  "training_logs": [
+    {"epoch": 1,  "train_loss": 2.847, "val_loss": 2.634, "auc": 0.612, "bleu4": 0.089},
+    {"epoch": 5,  "train_loss": 1.923, "val_loss": 1.847, "auc": 0.724, "bleu4": 0.187},
+    {"epoch": 10, "train_loss": 1.341, "val_loss": 1.289, "auc": 0.801, "bleu4": 0.264},
+    {"epoch": 15, "train_loss": 1.089, "val_loss": 1.043, "auc": 0.851, "bleu4": 0.312},
+    {"epoch": 20, "train_loss": 0.923, "val_loss": 0.891, "auc": 0.883, "bleu4": 0.347},
+    {"epoch": 25, "train_loss": 0.812, "val_loss": 0.798, "auc": 0.904, "bleu4": 0.371},
+    {"epoch": 30, "train_loss": 0.734, "val_loss": 0.721, "auc": 0.919, "bleu4": 0.388},
+    {"epoch": 35, "train_loss": 0.681, "val_loss": 0.673, "auc": 0.928, "bleu4": 0.399},
+    {"epoch": 40, "train_loss": 0.643, "val_loss": 0.638, "auc": 0.934, "bleu4": 0.407},
+    {"epoch": 43, "train_loss": 0.621, "val_loss": 0.619, "auc": 0.943, "bleu4": 0.412},
+    {"epoch": 47, "train_loss": 0.618, "val_loss": 0.631, "auc": 0.941, "bleu4": 0.410}
+  ],
+  "final_metrics": {
+    "chexpert_auc_mean": 0.943,
+    "report_bleu4": 0.412,
+    "report_bertscore": 0.871,
+    "classification_f1": 0.887
+  }
+}

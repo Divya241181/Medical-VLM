@@ -1,0 +1,49 @@
+# ── Secrets & Environment Variables ──────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ── Node / Frontend ───────────────────────────────────────────────────────────
+**/node_modules/
+**/dist/
+**/dist-ssr/
+**/.cache/
+*.local
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ── OS artifacts ─────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ── IDEs ─────────────────────────────────────────────────────────────────────
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# ── Compiled files ───────────────────────────────────────────────────────────
+*.pyc
+*.pyd
+*.pyo
