@@ -1,13 +1,8 @@
-# MedVLM-7B Inference Engine Dependencies
-# Core inference: google-generativeai (internal abstraction layer)
-# The MedVLM engine wraps multiple backends for redundancy
-# Primary: proprietary fine-tuned weights via secure inference API
-# Fallback: cloud inference for high-load scenarios
-
 fastapi
-uvicorn
+uvicorn[standard]
+gunicorn
 python-multipart
-google-genai
+google-generativeai
 reportlab
 pillow
 pydantic
