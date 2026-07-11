@@ -2,12 +2,80 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/medvlm-logo.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MedVLM - AI Radiology Assistant</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/medvlm-logo.png" />
+    <link rel="apple-touch-icon" href="/medvlm-logo.png" />
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#00d4aa" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="MedVLM" />
+
+    <!-- Viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- SEO -->
+    <title>MedVLM — AI Radiology Assistant</title>
+    <meta name="description" content="AI-powered chest X-ray analysis. Upload a radiograph and get a structured clinical report with findings, severity, lung zone mapping, and a downloadable PDF — powered by Gemini 2.5 Flash." />
+    <meta name="keywords" content="radiology, chest X-ray, AI, medical, Gemini, report generation, lung analysis" />
+    <meta name="author" content="MedVLM" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="MedVLM — AI Radiology Assistant" />
+    <meta property="og:description" content="Upload a chest X-ray. Get an AI-generated clinical report in seconds." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/medvlm-logo.png" />
+
+    <!-- Loading screen styles (shown before React mounts) -->
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        background: #0a0f1a;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      }
+      #app-loader {
+        position: fixed; inset: 0; z-index: 99999;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        background: #0a0f1a;
+        gap: 16px;
+        transition: opacity 0.4s ease;
+      }
+      #app-loader.hidden { opacity: 0; pointer-events: none; }
+      .loader-ring {
+        width: 48px; height: 48px;
+        border: 3px solid rgba(0,212,170,0.15);
+        border-top-color: #00d4aa;
+        border-radius: 50%;
+        animation: spin 0.9s linear infinite;
+      }
+      .loader-text {
+        font-size: 13px; font-weight: 600; color: #00d4aa;
+        letter-spacing: 1.5px; font-family: 'Courier New', monospace;
+        text-transform: uppercase;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
   </head>
   <body>
+    <!-- Instant loading screen — hidden once React mounts -->
+    <div id="app-loader">
+      <div class="loader-ring"></div>
+      <div class="loader-text">Loading MedVLM</div>
+    </div>
+
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+      // Hide loader once React has rendered
+      window.__hideLoader = function() {
+        var el = document.getElementById('app-loader');
+        if (el) { el.classList.add('hidden'); setTimeout(function(){ el.remove(); }, 500); }
+      };
+    </script>
   </body>
 </html>

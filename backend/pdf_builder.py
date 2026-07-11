@@ -421,6 +421,53 @@ def build_pdf(report: dict) -> bytes:
         ParagraphStyle("ZN", fontSize=7.5, textColor=MUTED_LIGHT, alignment=TA_LEFT, fontName="Helvetica-Oblique")
     ))
 
+    # ── ICD-10 Codes ──────────────────────────────────────────────────────────
+    icd_codes = report.get("icd10_codes") or []
+    if icd_codes:
+        story += _section_header("ICD-10 BILLING CODES")
+        icd_style_code = ParagraphStyle(
+            "ICD_Code", fontName="Helvetica-Bold", fontSize=9,
+            textColor=TEAL, leading=12
+        )
+        icd_style_desc = ParagraphStyle(
+            "ICD_Desc", fontName="Helvetica", fontSize=9,
+            textColor=BODY_TEXT, leading=12
+        )
+        icd_data = [[
+            Paragraph("CODE", ParagraphStyle("ICH", fontName="Helvetica-Bold", fontSize=8, textColor=WHITE, alignment=TA_CENTER)),
+            Paragraph("DESCRIPTION", ParagraphStyle("ICH2", fontName="Helvetica-Bold", fontSize=8, textColor=WHITE, alignment=TA_LEFT)),
+        ]]
+        for item in icd_codes:
+            code = item.get("code", "")
+            desc = item.get("description", "")
+            icd_data.append([
+                Paragraph(code, icd_style_code),
+                Paragraph(desc, icd_style_desc),
+            ])
+        icd_table = Table(
+            icd_data,
+            colWidths=[60, CONTENT_W - 60],
+            style=TableStyle([
+                ("BACKGROUND", (0, 0), (-1, 0), TEAL),
+                ("TEXTCOLOR", (0, 0), (-1, 0), WHITE),
+                ("BOX", (0, 0), (-1, -1), 0.5, GRAY_BD),
+                ("INNERGRID", (0, 0), (-1, -1), 0.3, GRAY_BD),
+                ("ALIGN", (0, 0), (0, -1), "CENTER"),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("TOPPADDING", (0, 0), (-1, -1), 4),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                ("LEFTPADDING", (1, 0), (1, -1), 8),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [WHITE, GRAY_BG]),
+            ]),
+        )
+        story.append(icd_table)
+        story.append(Spacer(1, 2*mm))
+        story.append(Paragraph(
+            '<i><font size="7.5" color="#94a3b8">ICD-10 codes are AI-suggested. Verify with a certified medical coder before use for billing.</font></i>',
+            ParagraphStyle("ICN", fontSize=7.5, textColor=MUTED_LIGHT, alignment=TA_LEFT, fontName="Helvetica-Oblique")
+        ))
+
     # ── Build ──
     doc.build(story, onFirstPage=_on_first_page, onLaterPages=_on_later_pages)
     return buffer.getvalue()
+

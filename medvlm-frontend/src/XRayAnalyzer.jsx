@@ -45,6 +45,11 @@ const PIPELINE_STEPS = [
 const TOTAL_DURATION = PIPELINE_STEPS.reduce((s, p) => s + p.duration, 0);
 
 /* ── Component ─────────────────────────────────────────────────────────── */
+const LANGS = [
+  "English", "Hindi", "Gujarati", "Marathi", "Tamil",
+  "Telugu", "Bengali", "Spanish", "French", "Arabic",
+];
+
 export default function XRayAnalyzer({ onReportSaved, selectedReport, onClearSelectedReport }) {
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -55,6 +60,17 @@ export default function XRayAnalyzer({ onReportSaved, selectedReport, onClearSel
   const [dragOver, setDragOver] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [viewingPast, setViewingPast] = useState(false);
+  const [language, setLanguage] = useState("English");
+  // Streaming live output
+  const [streamedText, setStreamedText] = useState("");
+  // Google Search grounding
+  const [groundedInsights, setGroundedInsights] = useState(null);
+  const [groundedLoading, setGroundedLoading] = useState(false);
+  // Chatbot state
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+  const chatEndRef = useRef();
   const inputRef = useRef();
   const rightPanelRef = useRef();
 
@@ -161,26 +177,62 @@ export default function XRayAnalyzer({ onReportSaved, selectedReport, onClearSel
 
   const onDrop = useCallback((e) => { e.preventDefault(); setDragOver(false); handleFile(e.dataTransfer.files[0]); }, [handleFile]);
 
-  /* ── Analyze — sync API + animation ──────────────────────────────────── */
+  /* ── Analyze — SSE streaming + pipeline animation ───────────────── */
   const analyze = async () => {
     if (!file) return;
     setLoading(true); setError(null); setReport(null);
-    setShowResults(false);
+    setShowResults(false); setChatMessages([]); setStreamedText(""); setGroundedInsights(null);
 
     const animationPromise = runPipeline();
+
+    // SSE streaming fetch — reads Gemini output in real-time
     const fetchPromise = (async () => {
       const fd = new FormData(); fd.append("image", file);
-      const res = await fetch(`${API}/analyze`, { method: "POST", body: fd });
-      if (!res.ok) throw new Error(`Server error ${res.status}`);
-      return res.json();
+      const url = `${API}/analyze-stream?language=${encodeURIComponent(language)}`;
+      const res = await fetch(url, { method: "POST", body: fd });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || `Server error ${res.status}`);
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let result = null;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const parts = buffer.split("\n\n");
+        buffer = parts.pop() ?? "";
+        for (const part of parts) {
+          if (!part.startsWith("data: ")) continue;
+          try {
+            const payload = JSON.parse(part.slice(6));
+            if (payload.type === "chunk") {
+              // show last 280 chars of live Gemini output
+              setStreamedText(prev => (prev + payload.text).slice(-280));
+            } else if (payload.type === "done") {
+              result = payload.report;
+            } else if (payload.type === "error") {
+              throw new Error(payload.message);
+            }
+          } catch (parseErr) {
+            if (parseErr.message && !parseErr.message.startsWith("JSON")) throw parseErr;
+          }
+        }
+      }
+      if (!result) throw new Error("No report received. Please try again.");
+      return result;
     })();
 
     try {
       const [, data] = await Promise.all([animationPromise, fetchPromise]);
       setPipelineDone(true);
-      /* keep completed card visible 1.5s then fade */
       const doneTimer = setTimeout(() => {
         setPipelineActive(false);
+        setStreamedText("");
         setReport(data); setActiveTab(0);
         setShowResults(true);
         setLoading(false);
@@ -189,8 +241,61 @@ export default function XRayAnalyzer({ onReportSaved, selectedReport, onClearSel
       }, 1500);
       timersRef.current.push(doneTimer);
     } catch (e) {
-      setError(e.message);
+      setError(e.message || "Analysis failed. Please try again.");
+      setStreamedText("");
       setPipelineActive(false); setPipelineDone(false); setLoading(false);
+    }
+  };
+
+  /* ── Google Search Grounding ────────────────────────────────── */
+  const getGroundedInsights = async () => {
+    if (!report || groundedLoading) return;
+    setGroundedLoading(true); setGroundedInsights(null);
+    try {
+      const res = await fetch(`${API}/grounded-insights`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          conditions: report.abnormalities || [],
+          severity: report.severity || "normal",
+        }),
+      });
+      const data = await res.json();
+      setGroundedInsights(data.insights);
+    } catch {
+      setGroundedInsights("Unable to fetch grounded insights. Please try again.");
+    } finally {
+      setGroundedLoading(false);
+    }
+  };
+
+  /* ── Chat ─────────────────────────────────────────────────────────────── */
+  const sendChat = async () => {
+    if (!chatInput.trim() || !report || chatLoading) return;
+    const userMsg = { role: "user", text: chatInput.trim() };
+    const newHistory = [...chatMessages, userMsg];
+    setChatMessages(newHistory);
+    setChatInput("");
+    setChatLoading(true);
+    setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+    try {
+      const res = await fetch(`${API}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          report_context: report,
+          conversation_history: newHistory.slice(0, -1).map(m => ({ role: m.role, text: m.text })),
+          user_message: userMsg.text,
+          language,
+        }),
+      });
+      const data = await res.json();
+      setChatMessages(prev => [...prev, { role: "model", text: data.reply }]);
+    } catch {
+      setChatMessages(prev => [...prev, { role: "model", text: "Sorry, I couldn't process that. Please try again." }]);
+    } finally {
+      setChatLoading(false);
+      setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
     }
   };
 
@@ -210,19 +315,20 @@ export default function XRayAnalyzer({ onReportSaved, selectedReport, onClearSel
   };
 
   const fmtSize = (b) => b < 1024 ? b + " B" : b < 1048576 ? (b / 1024).toFixed(1) + " KB" : (b / 1048576).toFixed(1) + " MB";
-  const tabs = ["Report", "Findings", "Lung Map"];
+  const tabs = ["Report", "Findings", "Lung Map", "💬 Chat"];
 
   /* ── Render ──────────────────────────────────────────────────────────── */
   return (
     <div style={{ fontFamily: font, color: C.text, minHeight: "calc(100vh - 56px)" }}>
       {/* Main Grid */}
-      <div style={{ display: "flex", gap: 24, padding: 24, maxWidth: 1400, margin: "0 auto", flexWrap: "wrap" }}>
+      <div className="mvlm-main-grid" style={{ display: "flex", gap: 24, padding: 24, maxWidth: 1400, margin: "0 auto", flexWrap: "wrap" }}>
 
         {/* ── LEFT COLUMN ──────────────────────────────────────────── */}
-        <div style={{ flex: "0 0 38%", minWidth: 320, maxWidth: 520, display: "flex", flexDirection: "column", gap: 14 }}>
+        <div className="mvlm-left-col" style={{ flex: "0 0 38%", minWidth: 320, maxWidth: 520, display: "flex", flexDirection: "column", gap: 14 }}>
 
           {/* Upload Zone */}
           <div
+            className="mvlm-upload-zone"
             onClick={() => inputRef.current?.click()}
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
@@ -247,7 +353,7 @@ export default function XRayAnalyzer({ onReportSaved, selectedReport, onClearSel
               <div>
                 <img src="/medvlm-logo.png" alt="MedVLM" style={{ width: 56, height: 56, marginBottom: 12, opacity: 0.7, filter: "drop-shadow(0 0 8px rgba(0,212,170,0.3))" }} />
                 <div style={{ fontSize: 14, fontWeight: 700, color: C.teal, letterSpacing: 1.5, fontFamily: "'Courier New', monospace" }}>DROP X-RAY HERE</div>
-                <div style={{ fontSize: 12, color: C.mutedDark, marginTop: 8 }}>DICOM · PNG · JPG · up to 10MB</div>
+                <div style={{ fontSize: 12, color: C.mutedDark, marginTop: 8 }}>PNG · JPG · up to 10MB</div>
               </div>
             )}
           </div>
@@ -260,6 +366,23 @@ export default function XRayAnalyzer({ onReportSaved, selectedReport, onClearSel
               <button onClick={() => { setFile(null); setPreview(null); setReport(null); setError(null); }} style={{ fontSize: 12, background: "none", border: "none", color: C.red, cursor: "pointer", fontWeight: 600 }}>✕ Remove</button>
             </div>
           )}
+
+          {/* Language Selector */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: 11, color: C.muted, fontFamily: "'Courier New', monospace", letterSpacing: 0.5, whiteSpace: "nowrap" }}>🌐 LANGUAGE:</span>
+            <select
+              value={language}
+              onChange={e => setLanguage(e.target.value)}
+              style={{
+                flex: 1, height: 34, borderRadius: 8, border: `1px solid ${C.tealBorder}`,
+                background: C.surface2, color: C.teal, fontSize: 12, fontWeight: 600,
+                padding: "0 10px", cursor: "pointer", fontFamily: "'Inter', system-ui, sans-serif",
+                outline: "none",
+              }}
+            >
+              {LANGS.map(l => <option key={l} value={l} style={{ background: C.surface2 }}>{l}</option>)}
+            </select>
+          </div>
 
           {/* Model Info Card */}
           <div style={{
@@ -317,10 +440,25 @@ export default function XRayAnalyzer({ onReportSaved, selectedReport, onClearSel
             🧠 POWERED BY GEMINI 2.5 FLASH
           </div>
 
-          {/* Error */}
+          {/* Error with retry */}
           {error && (
-            <div style={{ ...card, borderColor: C.red, background: "rgba(255,71,87,0.1)", color: C.red, fontSize: 13, padding: 16 }}>
-              <strong>⚠ Error:</strong> {error}
+            <div style={{ ...card, borderColor: C.red, background: "rgba(255,71,87,0.08)", padding: 16 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: C.red, marginBottom: 4, fontFamily: "'Courier New', monospace" }}>⚠ ANALYSIS FAILED</div>
+                  <div style={{ fontSize: 13, color: "#ff8a95", lineHeight: 1.5 }}>{error}</div>
+                </div>
+                <button
+                  onClick={analyze}
+                  disabled={!file}
+                  style={{
+                    flexShrink: 0, padding: "7px 14px", borderRadius: 7,
+                    border: `1px solid ${C.red}`, background: "rgba(255,71,87,0.12)",
+                    color: C.red, fontSize: 12, fontWeight: 700,
+                    cursor: "pointer", fontFamily: font, whiteSpace: "nowrap",
+                  }}
+                >↺ Retry</button>
+              </div>
             </div>
           )}
 
@@ -329,7 +467,7 @@ export default function XRayAnalyzer({ onReportSaved, selectedReport, onClearSel
 
         {/* ── RIGHT COLUMN ─────────────────────────────────────────────── */}
         {report && showResults && (
-          <div ref={rightPanelRef} style={{ flex: 1, minWidth: 360, display: "flex", flexDirection: "column", gap: 0, animation: "fadeInUp .5s ease both" }}>
+          <div className="mvlm-right-col" ref={rightPanelRef} style={{ flex: 1, minWidth: 360, display: "flex", flexDirection: "column", gap: 0, animation: "fadeInUp .5s ease both" }}>
 
             {/* Past report banner */}
             {viewingPast && selectedReport && (
@@ -363,7 +501,7 @@ export default function XRayAnalyzer({ onReportSaved, selectedReport, onClearSel
             {/* Tabs */}
             <div style={{ display: "flex", background: C.surface1, borderRadius: "12px 12px 0 0", border: `1px solid ${C.border}`, borderBottom: `1px solid rgba(255,255,255,0.06)`, overflow: "hidden" }}>
               {tabs.map((t, i) => (
-                <button key={t} onClick={() => setActiveTab(i)} style={{
+                <button className="mvlm-tab-btn" key={t} onClick={() => setActiveTab(i)} style={{
                   flex: 1, padding: "13px 0", border: "none", fontSize: 13, fontWeight: activeTab === i ? 700 : 500,
                   color: activeTab === i ? C.teal : C.mutedDark, background: "transparent",
                   borderBottom: activeTab === i ? `2px solid ${C.teal}` : "2px solid transparent",
@@ -448,8 +586,51 @@ export default function XRayAnalyzer({ onReportSaved, selectedReport, onClearSel
                     </div>
                   </div>
 
+                  {/* ── Google Search Grounded Guidelines ── */}
+                  <div style={{ marginTop: 16 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: groundedInsights ? 10 : 0 }}>
+                      <div style={sectionLabel}>🔍 LATEST CLINICAL GUIDELINES</div>
+                      <button
+                        onClick={getGroundedInsights}
+                        disabled={groundedLoading}
+                        style={{
+                          padding: "5px 14px", borderRadius: 7, border: `1px solid ${C.tealBorder}`,
+                          background: groundedLoading ? C.surface3 : C.tealDim,
+                          color: groundedLoading ? C.mutedDark : C.teal,
+                          fontSize: 11, fontWeight: 700, cursor: groundedLoading ? "not-allowed" : "pointer",
+                          fontFamily: font, display: "flex", alignItems: "center", gap: 6, transition: "all .2s",
+                        }}
+                        onMouseEnter={e => { if (!groundedLoading) e.currentTarget.style.boxShadow = "0 0 10px rgba(0,212,170,0.2)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.boxShadow = "none"; }}
+                      >
+                        {groundedLoading ? (
+                          <><span style={{ animation: "medvlm-spin 1s linear infinite", display: "inline-block" }}>⟳</span> Searching...</>
+                        ) : (
+                          <>{groundedInsights ? "↺ Refresh" : "🔍 Get Live Guidelines"}</>
+                        )}
+                      </button>
+                    </div>
+                    {!groundedInsights && !groundedLoading && (
+                      <div style={{ fontSize: 11, color: C.mutedDark, fontStyle: "italic" }}>
+                        Click to fetch Google Search-grounded clinical guidelines for your detected conditions.
+                      </div>
+                    )}
+                    {groundedInsights && (
+                      <div style={{
+                        background: "rgba(0,212,170,0.04)", border: `1px solid ${C.tealBorder}`,
+                        borderLeft: `3px solid ${C.teal}`, borderRadius: 10, padding: "14px 16px",
+                      }}>
+                        <div style={{ fontSize: 9, fontWeight: 700, color: C.teal, fontFamily: "'Courier New', monospace", letterSpacing: 1, marginBottom: 8 }}>
+                          🌐 GROUNDED WITH GOOGLE SEARCH
+                        </div>
+                        <p style={{ fontSize: 13, lineHeight: 1.8, color: C.textSec, margin: 0, whiteSpace: "pre-wrap" }}>{groundedInsights}</p>
+                      </div>
+                    )}
+                  </div>
+
                 </div>
               )}
+
 
               {/* TAB 1 — Confidence Chart */}
               {activeTab === 1 && (() => {
@@ -563,6 +744,87 @@ export default function XRayAnalyzer({ onReportSaved, selectedReport, onClearSel
                 </div>
               )}
 
+              {/* TAB 3 — Chatbot */}
+              {activeTab === 3 && (
+                <div style={{ display: "flex", flexDirection: "column", height: 480 }}>
+                  <div style={sectionLabel}>AI REPORT ASSISTANT</div>
+                  <div style={{ fontSize: 11, color: C.mutedDark, marginBottom: 12 }}>Ask questions about <em>this specific report</em>. Responses are grounded in your X-ray findings only.</div>
+
+                  {/* Messages */}
+                  <div style={{
+                    flex: 1, overflowY: "auto", display: "flex", flexDirection: "column",
+                    gap: 10, padding: "4px 0", marginBottom: 12,
+                  }}>
+                    {chatMessages.length === 0 && (
+                      <div style={{ textAlign: "center", color: C.mutedDark, fontSize: 13, marginTop: 40 }}>
+                        <div style={{ fontSize: 28, marginBottom: 8 }}>💬</div>
+                        <div>Ask me anything about your X-ray report</div>
+                        <div style={{ fontSize: 11, marginTop: 6, color: C.mutedDark }}>
+                          e.g. "What does opacity mean?" · "Is this serious?" · "What should I do next?"
+                        </div>
+                      </div>
+                    )}
+                    {chatMessages.map((msg, i) => (
+                      <div key={i} style={{
+                        display: "flex",
+                        justifyContent: msg.role === "user" ? "flex-end" : "flex-start",
+                      }}>
+                        <div style={{
+                          maxWidth: "82%", padding: "10px 14px", borderRadius: 12,
+                          fontSize: 13, lineHeight: 1.6,
+                          ...(msg.role === "user"
+                            ? { background: "rgba(0,212,170,0.12)", border: `1px solid ${C.tealBorder}`, color: C.text, borderBottomRightRadius: 4 }
+                            : { background: C.surface2, border: `1px solid ${C.border}`, color: C.textSec, borderBottomLeftRadius: 4 }
+                          ),
+                        }}>
+                          {msg.role === "model" && (
+                            <div style={{ fontSize: 9, fontWeight: 700, color: C.teal, fontFamily: "'Courier New', monospace", marginBottom: 4, letterSpacing: 0.8 }}>MEDVLM AI</div>
+                          )}
+                          {msg.text}
+                        </div>
+                      </div>
+                    ))}
+                    {chatLoading && (
+                      <div style={{ display: "flex", gap: 5, padding: "10px 14px" }}>
+                        {[0,1,2].map(i => (
+                          <div key={i} style={{ width: 7, height: 7, borderRadius: "50%", background: C.teal, animation: `blink 1.2s ease-in-out ${i*0.2}s infinite` }} />
+                        ))}
+                      </div>
+                    )}
+                    <div ref={chatEndRef} />
+                  </div>
+
+                  {/* Input */}
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <input
+                      type="text"
+                      value={chatInput}
+                      onChange={e => setChatInput(e.target.value)}
+                      onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendChat()}
+                      placeholder="Ask about your report..."
+                      disabled={chatLoading}
+                      style={{
+                        flex: 1, height: 40, borderRadius: 8,
+                        border: `1px solid ${C.tealBorder}`,
+                        background: C.surface2, color: C.text,
+                        padding: "0 14px", fontSize: 13,
+                        fontFamily: font, outline: "none",
+                      }}
+                    />
+                    <button
+                      onClick={sendChat}
+                      disabled={!chatInput.trim() || chatLoading}
+                      style={{
+                        height: 40, padding: "0 16px", borderRadius: 8, border: "none",
+                        background: (!chatInput.trim() || chatLoading) ? C.surface3 : `linear-gradient(135deg, #00d4aa, #0099cc)`,
+                        color: (!chatInput.trim() || chatLoading) ? C.mutedDark : C.bg,
+                        fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font,
+                      }}
+                    >Send</button>
+                  </div>
+                </div>
+              )}
+
             </div>
           </div>
         )}
@@ -642,6 +904,39 @@ export default function XRayAnalyzer({ onReportSaved, selectedReport, onClearSel
                     EST. REMAINING: {countdown}s
                   </div>
                 </div>
+
+                {/* Live Gemini stream output */}
+                {streamedText && (
+                  <div style={{
+                    marginTop: 16, padding: "10px 12px", borderRadius: 8,
+                    background: "rgba(0,0,0,0.3)", border: `1px solid ${C.tealBorder}`,
+                    maxHeight: 110, overflowY: "hidden", position: "relative",
+                  }}>
+                    <div style={{ fontSize: 9, fontWeight: 700, color: C.teal, letterSpacing: 1.2, fontFamily: "'Courier New', monospace", marginBottom: 4 }}>⚡ LIVE OUTPUT</div>
+                    <div style={{ fontSize: 10, color: "rgba(0,212,170,0.7)", fontFamily: "'Courier New', monospace", lineHeight: 1.6, wordBreak: "break-all" }}>
+                      {streamedText}
+                      <span style={{ display: "inline-block", width: 7, height: 11, background: C.teal, marginLeft: 2, animation: "blink 0.8s step-end infinite", verticalAlign: "middle" }} />
+                    </div>
+                    {/* fade mask at bottom */}
+                    <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 30, background: "linear-gradient(transparent, rgba(10,15,26,0.9))", borderRadius: "0 0 8px 8px" }} />
+                  </div>
+                )}
+              </div>
+            ) : loading && !pipelineActive ? (
+              /* ── Loading Skeleton ── */
+              <div style={{ width: "100%", padding: "16px 0", display: "flex", flexDirection: "column", gap: 14 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: C.teal, letterSpacing: 1.4, fontFamily: "'Courier New', monospace", marginBottom: 4 }}>⟳ INITIALIZING ANALYSIS...</div>
+                <div className="skeleton" style={{ height: 80 }} />
+                <div style={{ display: "flex", gap: 10 }}>
+                  <div className="skeleton" style={{ height: 20, flex: 2 }} />
+                  <div className="skeleton" style={{ height: 20, flex: 1 }} />
+                </div>
+                <div className="skeleton" style={{ height: 60 }} />
+                <div className="skeleton" style={{ height: 60 }} />
+                <div className="skeleton" style={{ height: 60 }} />
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {[1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 30, width: 100, borderRadius: 20 }} />)}
+                </div>
               </div>
             ) : (
               /* ── Empty State ── */
@@ -661,7 +956,9 @@ export default function XRayAnalyzer({ onReportSaved, selectedReport, onClearSel
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes glow-pulse { 0%, 100% { box-shadow: 0 0 8px rgba(255,71,87,0.2); } 50% { box-shadow: 0 0 20px rgba(255,71,87,0.5); } }
         @keyframes shimmer { 0% { transform: translateX(-50%); } 100% { transform: translateX(50%); } }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
       `}</style>
+
     </div>
   );
 }

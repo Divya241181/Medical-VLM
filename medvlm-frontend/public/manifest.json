@@ -1,0 +1,26 @@
+{
+  "name": "MedVLM — AI Radiology Assistant",
+  "short_name": "MedVLM",
+  "description": "AI-powered chest X-ray analysis and radiology report generation using Gemini 2.5 Flash",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0f1a",
+  "theme_color": "#00d4aa",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/medvlm-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/medvlm-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["medical", "health", "productivity"],
+  "screenshots": []
+}

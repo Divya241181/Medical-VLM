@@ -109,7 +109,7 @@ export default function XRayAnalyzer() {
 
     try {
       const form = new FormData();
-      form.append("file", file);
+      form.append("image", file);
 
       const res = await fetch(`${API}/analyze`, {
         method: "POST",
