@@ -12,14 +12,14 @@ import json
 import base64
 import re
 from dotenv import load_dotenv
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
 load_dotenv()
 
-# ── Configure MedVLM Engine ─────────────────────────────────────────────────
+# ── Configure Gemini Engine ─────────────────────────────────────────────────
 _API_KEY = os.getenv("GEMINI_API_KEY")
-genai.configure(api_key=_API_KEY)
-_engine = genai.GenerativeModel("gemini-2.5-flash")
+_client = genai.Client(api_key=_API_KEY)
 
 # ── Prompt ───────────────────────────────────────────────────────────────────
 ANALYSIS_PROMPT = """You are an expert radiologist. Analyze this chest X-ray image carefully and respond ONLY with a valid JSON object with these exact keys:
@@ -64,21 +64,18 @@ FALLBACK_RESPONSE = {
 def analyze_xray(image_bytes: bytes) -> dict:
     """Run MedVLM-7B inference on raw image bytes. Returns structured radiology report."""
     try:
-        # Encode image to base64
-        image_b64 = base64.b64encode(image_bytes).decode("utf-8")
+        image_part = types.Part.from_bytes(
+            data=image_bytes,
+            mime_type="image/png"
+        )
 
-        # Build multimodal content
-        image_part = {
-            "mime_type": "image/png",
-            "data": image_b64,
-        }
-
-        response = _engine.generate_content(
-            [ANALYSIS_PROMPT, image_part],
-            generation_config=genai.GenerationConfig(
+        response = _client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=[ANALYSIS_PROMPT, image_part],
+            config=types.GenerateContentConfig(
                 temperature=0.2,
                 max_output_tokens=2048,
-            ),
+            )
         )
 
         raw_text = response.text.strip()

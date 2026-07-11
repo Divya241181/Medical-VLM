@@ -36,11 +36,11 @@ const zoneColor = (s) => s === "clear" ? C.green : C.red;
 
 /* ── Pipeline step definitions ─────────────────────────────────────────── */
 const PIPELINE_STEPS = [
-  { id: 0, label: "Image Preprocessing", duration: 1200 },
-  { id: 1, label: "Lung Segmentation", duration: 2000 },
-  { id: 2, label: "Running MedVLM-7B Inference", duration: 4000 },
-  { id: 3, label: "Generating Structured Report", duration: 1500 },
-  { id: 4, label: "Building PDF", duration: 1000 },
+  { id: 0, label: "Image Preprocessing", duration: 200 },
+  { id: 1, label: "Preparing API Payload", duration: 200 },
+  { id: 2, label: "Running Gemini Inference", duration: 3000 },
+  { id: 3, label: "Parsing JSON Output", duration: 200 },
+  { id: 4, label: "Formatting Report", duration: 200 },
 ];
 const TOTAL_DURATION = PIPELINE_STEPS.reduce((s, p) => s + p.duration, 0);
 
@@ -269,10 +269,10 @@ export default function XRayAnalyzer({ onReportSaved, selectedReport, onClearSel
           }}>
             <div style={{ position: "absolute", top: 0, left: "-100%", width: "200%", height: "100%", background: "linear-gradient(90deg, transparent, rgba(0,212,170,0.06), transparent)", animation: "shimmer 3s ease-in-out infinite", pointerEvents: "none" }} />
             <div style={{ fontWeight: 700, fontSize: 11, marginBottom: 4, color: C.teal, letterSpacing: 1.2, fontFamily: "'Courier New', monospace", textTransform: "uppercase" }}>Model Info</div>
-            <div style={{ color: C.muted }}>🧠 Model: <span style={{ fontFamily: "'Courier New', monospace", fontWeight: 600, color: C.teal }}>MedVLM-7B v2.1</span></div>
-            <div style={{ color: C.muted }}>📊 Trained on: <span style={{ fontFamily: "'Courier New', monospace", fontWeight: 600, color: C.teal }}>847,000 radiographs</span></div>
-            <div style={{ color: C.muted }}>🎯 Accuracy: <span style={{ fontFamily: "'Courier New', monospace", fontWeight: 600, color: C.teal }}>94.3% (CheXpert)</span></div>
-            <div style={{ color: C.muted }}>⚡ Avg inference: <span style={{ fontFamily: "'Courier New', monospace", fontWeight: 600, color: C.teal }}>~10 seconds</span></div>
+            <div style={{ color: C.muted }}>🧠 Model: <span style={{ fontFamily: "'Courier New', monospace", fontWeight: 600, color: C.teal }}>Gemini 2.5 Flash</span></div>
+            <div style={{ color: C.muted }}>📊 Type: <span style={{ fontFamily: "'Courier New', monospace", fontWeight: 600, color: C.teal }}>Multimodal Foundation Model</span></div>
+            <div style={{ color: C.muted }}>🎯 Domain: <span style={{ fontFamily: "'Courier New', monospace", fontWeight: 600, color: C.teal }}>General Vision</span></div>
+            <div style={{ color: C.muted }}>⚡ Avg inference: <span style={{ fontFamily: "'Courier New', monospace", fontWeight: 600, color: C.teal }}>~4 seconds</span></div>
           </div>
 
           {/* Analyze Button */}
@@ -314,7 +314,7 @@ export default function XRayAnalyzer({ onReportSaved, selectedReport, onClearSel
 
           {/* Powered by badge */}
           <div style={{ textAlign: "center", fontSize: 10, color: C.mutedDark, fontWeight: 600, letterSpacing: 0.5, fontFamily: "'Courier New', monospace" }}>
-            🧠 POWERED BY MEDVLM-7B
+            🧠 POWERED BY GEMINI 2.5 FLASH
           </div>
 
           {/* Error */}
@@ -464,7 +464,7 @@ export default function XRayAnalyzer({ onReportSaved, selectedReport, onClearSel
                 return (
                 <div>
                   <div style={sectionLabel}>AI CONFIDENCE SCORES</div>
-                  <div style={{ fontSize: 11, color: C.mutedDark, marginBottom: 20 }}>Pathology detection confidence · MedVLM-7B v2.1</div>
+                  <div style={{ fontSize: 11, color: C.mutedDark, marginBottom: 20 }}>Pathology detection confidence · Gemini 2.5 Flash</div>
 
                   <div style={{ display: "flex", gap: 24, alignItems: "flex-start", flexWrap: "wrap" }}>
                     {/* ── Donut Chart ── */}
@@ -578,7 +578,7 @@ export default function XRayAnalyzer({ onReportSaved, selectedReport, onClearSel
                   color: pipelineDone ? C.green : C.teal, marginBottom: 20,
                   fontFamily: "'Courier New', monospace",
                 }}>
-                  {pipelineDone ? "✅ ANALYSIS COMPLETE" : "⚡ MEDVLM-7B PIPELINE"}
+                  {pipelineDone ? "✅ ANALYSIS COMPLETE" : "⚡ GEMINI PIPELINE"}
                 </div>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
@@ -648,7 +648,7 @@ export default function XRayAnalyzer({ onReportSaved, selectedReport, onClearSel
               <div>
                 <img src="/medvlm-logo.png" alt="MedVLM" style={{ width: 64, height: 64, marginBottom: 16, opacity: 0.2, filter: "grayscale(0.5)" }} />
                 <div style={{ fontSize: 15, fontWeight: 600, color: C.mutedDark }}>Upload & analyze an X-ray to view results</div>
-                <div style={{ fontSize: 12, color: C.mutedDark, marginTop: 8, fontFamily: "'Courier New', monospace" }}>MedVLM-7B v2.1 · 847K radiographs · 94.3% ACC</div>
+                <div style={{ fontSize: 12, color: C.mutedDark, marginTop: 8, fontFamily: "'Courier New', monospace" }}>Gemini 2.5 Flash · Multimodal Foundation Model</div>
               </div>
             )}
           </div>
