@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 
-const API = import.meta.env.VITE_API_URL || "https://medvlm.onrender.com";
+const API = import.meta.env.VITE_API_URL || "https://medvlm-backend.onrender.com";
 
 /* ── Color Tokens (Dark Medical Theme) ─────────────────────────────────── */
 const C = {
