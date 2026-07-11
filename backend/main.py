@@ -34,33 +34,13 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-@app.middleware("http")
-async def add_cors_header(request: Request, call_next):
-    response = await call_next(request)
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Methods"] = "*"
-    response.headers["Access-Control-Allow-Headers"] = "*"
-    response.headers["X-Model-Version"] = "MedVLM-7B-v2.1"
-    return response
-
-
-@app.options("/{full_path:path}")
-async def options_handler(full_path: str):
-    return JSONResponse(
-        content={"detail": "OK"},
-        headers={
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "*",
-            "Access-Control-Allow-Headers": "*",
-        },
-    )
-
+# (Removed redundant and broken custom CORS middlewares)
 
 # ── Health Check ─────────────────────────────────────────────────────────────
 @app.get("/health")
@@ -107,7 +87,6 @@ async def analyze(
     result = analyze_xray(image_bytes, language=language)
     return JSONResponse(
         content=result,
-        headers={"Access-Control-Allow-Origin": "*"},
     )
 
 
@@ -124,7 +103,6 @@ async def chat(request: Request, body: ChatRequest):
     )
     return JSONResponse(
         content={"reply": reply},
-        headers={"Access-Control-Allow-Origin": "*"},
     )
 
 
@@ -139,7 +117,6 @@ async def generate_pdf(report: ReportResponse):
         media_type="application/pdf",
         headers={
             "Content-Disposition": "attachment; filename=MedVLM_Report.pdf",
-            "Access-Control-Allow-Origin": "*",
         },
     )
 
@@ -190,7 +167,6 @@ async def analyze_stream(
         headers={
             "Cache-Control": "no-cache",
             "X-Accel-Buffering": "no",
-            "Access-Control-Allow-Origin": "*",
         },
     )
 
@@ -209,7 +185,6 @@ async def grounded_insights(request: Request, body: GroundedInsightsRequest):
     insights = get_grounded_insights(body.conditions, body.severity)
     return JSONResponse(
         content={"insights": insights},
-        headers={"Access-Control-Allow-Origin": "*"},
     )
 
 
