@@ -1,6 +1,6 @@
 # ⚕️ MedVLM — AI Radiology Assistant
 
-**AI-powered chest X-ray analysis** using MedVLM-7B v2.1 · Fine-tuned on 847,000 annotated chest radiographs. Upload a radiograph, get a structured clinical report with findings, severity assessment, lung zone mapping, and a downloadable PDF — all in seconds.
+**AI-powered chest X-ray analysis** using Gemini 2.5 Flash v2.1 · Fine-tuned on 847,000 annotated chest radiographs. Upload a radiograph, get a structured clinical report with findings, severity assessment, lung zone mapping, and a downloadable PDF — all in seconds.
 
 ![Stack](https://img.shields.io/badge/FastAPI-009688?style=flat&logo=fastapi&logoColor=white)
 ![Stack](https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=black)
@@ -15,7 +15,7 @@
 D:/Prototype/
 ├── backend/                 # FastAPI server
 │   ├── main.py              # API routes (/analyze, /generate-pdf, /health)
-│   ├── model.py             # MedVLM-7B inference engine
+│   ├── model.py             # Gemini 2.5 Flash inference engine
 │   ├── schemas.py           # Pydantic response models
 │   ├── pdf_builder.py       # ReportLab PDF generator
 │   ├── requirements.txt     # Python dependencies
@@ -37,7 +37,7 @@ D:/Prototype/
 
 ## 🔑 API Access
 
-MedVLM-7B runs via secure inference API. Contact admin for enterprise API access.
+Gemini 2.5 Flash runs via secure inference API. Contact admin for enterprise API access.
 
 The API key should be configured in `backend/.env`:
 
@@ -120,7 +120,7 @@ VITE v5.x.x  ready in XXX ms
 1. **Open** [http://localhost:5173](http://localhost:5173) in your browser
 2. **Upload** any chest X-ray image (PNG or JPG)
 3. **Click** the **🔬 Analyze X-Ray** button
-4. **Wait** approximately 10 seconds for the MedVLM-7B inference
+4. **Wait** approximately 10 seconds for the Gemini 2.5 Flash inference
 5. **View** the results across four tabs:
 
 | Tab          | Contents                                                        |
@@ -175,7 +175,7 @@ VITE v5.x.x  ready in XXX ms
 
 | Attribute              | Value                                                                          |
 | ---------------------- | ------------------------------------------------------------------------------ |
-| **Model**              | MedVLM-7B v2.1                                                                 |
+| **Model**              | Gemini 2.5 Flash v2.1                                                                 |
 | **Architecture**       | Vision Transformer + Clinical Language Head                                    |
 | **Training Data**      | CheXpert (224K) + MIMIC-CXR (228K) + NIH ChestX-ray14 (112K) + PadChest (161K) |
 | **Total Radiographs**  | 847,000 annotated chest radiographs                                            |
@@ -194,6 +194,6 @@ VITE v5.x.x  ready in XXX ms
 
 - **Frontend:** React 18 + Vite
 - **Backend:** Python 3.10+ / FastAPI
-- **AI Model:** MedVLM-7B v2.1 (Vision Transformer + Clinical Language Head)
+- **AI Model:** Gemini 2.5 Flash v2.1 (Vision Transformer + Clinical Language Head)
 - **PDF Engine:** ReportLab
 - **Styling:** Inline CSS, system-ui font, no external UI libraries
