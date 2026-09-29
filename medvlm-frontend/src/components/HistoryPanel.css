@@ -4,19 +4,22 @@
 .history-thumbnail { transition: transform 0.2s; }
 .history-card:hover .history-thumbnail { transform: scale(1.05); }
 
-.history-list::-webkit-scrollbar { width: 4px; }
-.history-list::-webkit-scrollbar-track { background: #0a0f1a; }
+.history-list::-webkit-scrollbar { width: 5px; }
+.history-list::-webkit-scrollbar-track { background: #f8fafc; }
 .history-list::-webkit-scrollbar-thumb {
-  background: rgba(0,212,170,0.3);
-  border-radius: 2px;
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+.history-list::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 @keyframes historyCardIn {
-  from { opacity: 0; transform: translateX(20px); }
+  from { opacity: 0; transform: translateX(12px); }
   to   { opacity: 1; transform: translateX(0); }
 }
 .history-card {
-  animation: historyCardIn 0.3s ease-out forwards;
+  animation: historyCardIn 0.25s ease-out forwards;
 }
 
 @keyframes panelSlideIn {

@@ -47,3 +47,19 @@ Thumbs.db
 *.pyc
 *.pyd
 *.pyo
+
+# ── Databases & Archives ─────────────────────────────────────────────────────
+*.db
+*.sqlite
+*.sqlite3
+*.zip
+.pytest_cache/
+medvlm.db
+backend/medvlm.db
+
+# ── Personal & Capstone Reference Notes (Do Not Commit) ──────────────────────
+CAPSTONE_PRODUCT_ANALYSIS_GUIDE.md
+capstone_evaluation_guide.md
+*_personal_reference.md
+
+

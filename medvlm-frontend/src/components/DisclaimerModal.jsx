@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
+import { ShieldAlert, AlertTriangle, CheckCircle2, X, Activity } from "lucide-react";
 
 const STORAGE_KEY = "medvlm_disclaimer_accepted";
 
-export default function DisclaimerModal() {
+export default function DisclaimerModal({ forceOpen, onForceClose }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -10,100 +11,140 @@ export default function DisclaimerModal() {
     if (!accepted) setVisible(true);
   }, []);
 
+  const isOpen = forceOpen !== undefined ? forceOpen : visible;
+
   const accept = () => {
     localStorage.setItem(STORAGE_KEY, "1");
     setVisible(false);
+    if (onForceClose) onForceClose();
   };
 
-  if (!visible) return null;
+  if (!isOpen) return null;
 
   return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 9999,
-      background: "rgba(0,0,0,0.82)",
-      backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      padding: 24,
-    }}>
-      <div style={{
-        background: "#111827",
-        border: "1px solid rgba(255,255,255,0.1)",
-        borderTop: "3px solid #00d4aa",
-        borderRadius: 16,
-        padding: "36px 40px",
-        maxWidth: 520,
-        width: "100%",
-        boxShadow: "0 24px 80px rgba(0,0,0,0.6), 0 0 40px rgba(0,212,170,0.08)",
-        fontFamily: "'Inter', system-ui, sans-serif",
-      }}>
-        {/* Icon + Title */}
-        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 24 }}>
-          <div style={{
-            width: 48, height: 48, borderRadius: 12,
-            background: "rgba(0,212,170,0.12)",
-            border: "1px solid rgba(0,212,170,0.3)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 22, flexShrink: 0,
-          }}>⚕️</div>
-          <div>
-            <div style={{ fontSize: 18, fontWeight: 800, color: "#f1f5f9", letterSpacing: -0.3 }}>
-              Medical Disclaimer
+    <div className="mvlm-modal-backdrop">
+      <div className="mvlm-glass-panel mvlm-modal-box">
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <div
+              style={{
+                width: 46,
+                height: 46,
+                borderRadius: "12px",
+                background: "rgba(6, 182, 212, 0.12)",
+                border: "1px solid rgba(6, 182, 212, 0.3)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "var(--color-cyan)",
+                boxShadow: "0 0 16px rgba(6, 182, 212, 0.2)",
+              }}
+            >
+              <ShieldAlert size={24} />
             </div>
-            <div style={{ fontSize: 11, color: "#475569", fontWeight: 600, marginTop: 2, letterSpacing: 0.5 }}>
-              PLEASE READ BEFORE CONTINUING
+
+            <div>
+              <h3
+                style={{
+                  fontSize: 18,
+                  fontWeight: 800,
+                  color: "#f8fafc",
+                  fontFamily: "var(--font-display)",
+                  letterSpacing: "-0.02em",
+                  margin: 0,
+                }}
+              >
+                Clinical Reference & Safety Notice
+              </h3>
+              <span
+                style={{
+                  fontSize: 10.5,
+                  color: "var(--color-cyan)",
+                  fontWeight: 700,
+                  fontFamily: "var(--font-mono)",
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                  display: "block",
+                  marginTop: 2,
+                }}
+              >
+                CLINICAL DECISION SUPPORT GOVERNANCE
+              </span>
             </div>
           </div>
+
+          {forceOpen && (
+            <button
+              onClick={onForceClose}
+              style={{
+                background: "transparent",
+                border: "none",
+                color: "var(--text-muted)",
+                cursor: "pointer",
+                padding: 4,
+              }}
+            >
+              <X size={18} />
+            </button>
+          )}
         </div>
 
-        {/* Warning badge */}
-        <div style={{
-          background: "rgba(255,165,2,0.08)",
-          border: "1px solid rgba(255,165,2,0.25)",
-          borderRadius: 8, padding: "10px 14px",
-          marginBottom: 20,
-          display: "flex", gap: 10, alignItems: "flex-start",
-        }}>
-          <span style={{ fontSize: 16, flexShrink: 0 }}>⚠️</span>
-          <p style={{ margin: 0, fontSize: 13, color: "#fbbf24", fontWeight: 600, lineHeight: 1.5 }}>
-            This tool is for <strong>clinical reference and educational purposes only</strong>.
+        {/* Warning Callout */}
+        <div
+          style={{
+            background: "rgba(245, 158, 11, 0.1)",
+            border: "1px solid rgba(245, 158, 11, 0.3)",
+            borderRadius: "8px",
+            padding: "10px 14px",
+            display: "flex",
+            gap: 10,
+            alignItems: "flex-start",
+          }}
+        >
+          <AlertTriangle size={16} color="#f59e0b" style={{ flexShrink: 0, marginTop: 2 }} />
+          <p style={{ margin: 0, fontSize: 12.5, color: "#fcd34d", fontWeight: 500, lineHeight: 1.5 }}>
+            This system operates strictly as an <strong>investigational Clinical Decision Support (CDS) aid</strong>.
           </p>
         </div>
 
-        {/* Body text */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 28 }}>
+        {/* Bullet Points */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {[
-            "MedVLM uses AI (Gemini 2.5 Flash) to analyze chest X-rays. Results are AI-generated and may contain errors.",
-            "This tool is NOT a substitute for a licensed radiologist or physician. Do not make medical decisions based solely on this output.",
-            "Always consult a qualified healthcare professional for diagnosis, treatment, or medical advice.",
-            "By continuing, you confirm you understand this is an AI-assisted research tool, not a certified medical device.",
+            "MedVLM combines TorchXRayVision DenseNet-121 neural classifiers with Gemini multimodal reasoning models.",
+            "Predictions are algorithmic aids and must never replace clinical judgment by a licensed, certified radiologist.",
+            "All findings, differential probabilities, and ICD-10 suggestions require mandatory clinical correlation prior to patient management.",
+            "By continuing, you acknowledge active human-in-the-loop validation of all diagnostic assertions.",
           ].map((text, i) => (
             <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-              <span style={{ color: "#00d4aa", fontSize: 14, flexShrink: 0, marginTop: 1 }}>›</span>
-              <p style={{ margin: 0, fontSize: 13, color: "#94a3b8", lineHeight: 1.6 }}>{text}</p>
+              <CheckCircle2 size={15} color="var(--color-cyan)" style={{ flexShrink: 0, marginTop: 2 }} />
+              <p style={{ margin: 0, fontSize: 12.5, color: "var(--text-secondary)", lineHeight: 1.5 }}>
+                {text}
+              </p>
             </div>
           ))}
         </div>
 
-        {/* Accept button */}
+        {/* Accept Button */}
         <button
           onClick={accept}
-          style={{
-            width: "100%", height: 48, borderRadius: 10, border: "none",
-            background: "linear-gradient(135deg, #00d4aa, #0099cc)",
-            color: "#0a0f1a", fontSize: 14, fontWeight: 700,
-            cursor: "pointer", letterSpacing: "0.06em",
-            fontFamily: "'Inter', system-ui, sans-serif",
-            boxShadow: "0 0 20px rgba(0,212,170,0.3)",
-            transition: "all .2s",
-          }}
-          onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 0 35px rgba(0,212,170,0.5)"; e.currentTarget.style.transform = "scale(1.01)"; }}
-          onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 0 20px rgba(0,212,170,0.3)"; e.currentTarget.style.transform = "scale(1)"; }}
+          className="mvlm-btn-primary"
+          style={{ width: "100%", height: 46, fontSize: 13.5, marginTop: 4 }}
         >
-          I Understand — Continue to MedVLM
+          <Activity size={16} />
+          <span>Acknowledge & Access Clinical Workstation</span>
         </button>
 
-        <p style={{ margin: "12px 0 0", textAlign: "center", fontSize: 10, color: "#334155", lineHeight: 1.5 }}>
-          This notice is shown once. It will not appear again on this device.
+        <p
+          style={{
+            margin: 0,
+            textAlign: "center",
+            fontSize: 11,
+            color: "var(--text-dim)",
+            fontFamily: "var(--font-mono)",
+          }}
+        >
+          Compliance confirmation is recorded locally for this session.
         </p>
       </div>
     </div>

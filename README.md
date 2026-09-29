@@ -1,199 +1,195 @@
-# ⚕️ MedVLM — AI Radiology Assistant
+# ⚕️ MedVLM — Complete Clinical Radiology AI System
 
-**AI-powered chest X-ray analysis** using Gemini 2.5 Flash v2.1 · Fine-tuned on 847,000 annotated chest radiographs. Upload a radiograph, get a structured clinical report with findings, severity assessment, lung zone mapping, and a downloadable PDF — all in seconds.
+**Hospital-grade chest radiograph analysis** combining local deep learning pathology detection (**TorchXRayVision DenseNet-121**, trained on 700K+ annotated clinical radiographs across CheXpert, MIMIC-CXR, PadChest, and NIH ChestX-ray14) with multimodal generative clinical synthesis via **Google Gemini 2.5 Flash**.
 
-![Stack](https://img.shields.io/badge/FastAPI-009688?style=flat&logo=fastapi&logoColor=white)
-![Stack](https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=black)
-![Stack](https://img.shields.io/badge/MedVLM--7B-v2.1-0f6e56?style=flat)
-![Stack](https://img.shields.io/badge/ReportLab-PDF-red?style=flat)
+MedVLM accepts 16-bit clinical **DICOM (.dcm)** studies as well as standard images (PNG, JPG, WEBP), generates calibrated pathology probabilities and dynamic Grad-CAM heatmaps, classifies 6 anatomical lung zones, produces differential diagnoses with ICD-10 codes, persists studies in an SQLite database, supports physician digital sign-offs, and exports accredited A4 clinical PDF reports.
+
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat&logo=fastapi&logoColor=white)
+![React](https://img.shields.io/badge/React-61DAFB?style=flat&logo=react&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat&logo=vite&logoColor=white)
+![TorchXRayVision](https://img.shields.io/badge/TorchXRayVision-DenseNet--121-EE4C2C?style=flat&logo=pytorch&logoColor=white)
+![Google GenAI](https://img.shields.io/badge/Google%20GenAI-Gemini%202.5%20Flash-4285F4?style=flat&logo=google&logoColor=white)
+![DICOM](https://img.shields.io/badge/DICOM-16--bit%20Imaging-blue?style=flat)
+![Pytest](https://img.shields.io/badge/Pytest-11%2F11%20Passed-2ea44f?style=flat&logo=pytest)
+![Docker](https://img.shields.io/badge/Docker-Compose%20Ready-2496ED?style=flat&logo=docker&logoColor=white)
 
 ---
 
-## 📁 Project Structure
+## 🌟 Key Features
+
+* **🏥 Clinical DICOM (.dcm) & PHI Sanitization**:
+  * Native 16-bit DICOM parsing via `pydicom`.
+  * Automatic VOI LUT window center/width leveling and `MONOCHROME1` inversion.
+  * Strict Protected Health Information (PHI) scrubbing: patient names and IDs are redacted before multimodal inference.
+* **🔬 Dual-Mode Analysis Pipeline**:
+  * **⚡ Fast Unified Mode (~2.0s)**: Pairs local DenseNet-121 pathology scores with a single structured Gemini 2.5 Flash synthesis.
+  * **🧠 Multi-Agent Cascade Mode (~5.0s)**: Dispatches a 3-agent cascade:
+    1. *Vision Agent*: Extracts localized anatomical observations across 6 lung zones.
+    2. *Reasoning Agent*: Formulates differential diagnoses, clinical severity, and ICD-10 codes.
+    3. *Report Agent*: Drafts radiologist findings, impression, and multilingual patient brief.
+* **🔥 Dynamic Thread-Safe Grad-CAM**:
+  * On-demand layer activation saliency mapping for target pathologies (Cardiomegaly, Effusion, Pneumothorax, Consolidation, etc.) with concurrency locks preventing backward pass race conditions.
+* **🗄️ SQLite Study Persistence & History API**:
+  * Relational database storing radiograph studies, metadata, and findings with full CRUD endpoints (`/studies`).
+* **🩺 Physician Verification & Digital Sign-Off**:
+  * Licensed radiologist review modal to authenticate reports, record clinical addendum notes, and append digital signature blocks.
+* **📄 Hospital-Grade A4 PDF Exporter**:
+  * Generates formatted clinical PDFs featuring institutional headers, DICOM metadata, pathology metrics, differential tables, and physician certification badges.
+* **💬 Clinical AI Copilot & Specialist Referral Letters**:
+  * Multi-turn chat assistant grounded strictly in study findings, featuring audio speech synthesis and one-click specialist referral letters.
+* **🧪 100% Automated Pytest Coverage**:
+  * Unit and integration test suite covering API routes, DICOM windowing, thread-safety, and PDF generation.
+
+---
+
+## 📁 Repository Structure
 
 ```
-D:/Prototype/
-├── backend/                 # FastAPI server
-│   ├── main.py              # API routes (/analyze, /generate-pdf, /health)
-│   ├── model.py             # Gemini 2.5 Flash inference engine
-│   ├── schemas.py           # Pydantic response models
-│   ├── pdf_builder.py       # ReportLab PDF generator
-│   ├── requirements.txt     # Python dependencies
-│   └── .env                 # MEDVLM_INFERENCE_BACKEND=proprietary
+Med VLM/
+├── backend/                        # FastAPI Backend
+│   ├── main.py                     # API router, study endpoints, and lifecycle
+│   ├── pipeline.py                 # Dual-mode orchestrator (Fast & Multi-Agent)
+│   ├── local_model.py              # Thread-safe TorchXRayVision DenseNet-121 & Grad-CAM
+│   ├── dicom_utils.py              # 16-bit DICOM parser & PHI de-identification
+│   ├── database.py                 # SQLite + SQLAlchemy persistence layer
+│   ├── app_config.py               # Google GenAI client configuration & env loader
+│   ├── schemas.py                  # Strictly typed Pydantic models
+│   ├── pdf_builder.py              # ReportLab clinical PDF generator with sign-off
+│   ├── agents/                     # Specialized clinical agent modules
+│   │   ├── vision_agent.py         # Stage 1: Anatomical feature extractor
+│   │   ├── reasoning_agent.py      # Stage 2: Differential diagnosis & ICD-10 engine
+│   │   ├── report_agent.py         # Stage 3: Narrative report writer
+│   │   ├── chat_agent.py           # Interactive follow-up Q&A copilot
+│   │   ├── referral_agent.py       # Specialist referral letter generator
+│   │   └── grounding_agent.py      # Evidence-based literature citations
+│   ├── tests/                      # Automated test suite
+│   │   ├── test_api.py             # API route, validation, and lifecycle tests
+│   │   ├── test_local_model.py     # Torch inference, DICOM, and thread safety tests
+│   │   └── test_pdf.py             # PDF builder and sign-off tests
+│   ├── requirements.txt            # Python dependencies
+│   └── .env.example                # Template for environment configuration
 │
-├── medvlm-frontend/         # React + Vite frontend
+├── medvlm-frontend/                # React 18 + Vite Frontend
+│   ├── public/samples/             # Normal, cardiomegaly, pneumonia sample X-rays
 │   ├── src/
-│   │   ├── App.jsx          # App shell with navbar
-│   │   ├── XRayAnalyzer.jsx # Main radiology viewer component
-│   │   ├── main.jsx         # Entry point
-│   │   └── index.css        # (empty — styles are inline)
-│   ├── vite.config.js       # Vite configuration
-│   └── .env                 # VITE_API_URL
+│   │   ├── App.jsx                 # Application shell & navigation
+│   │   ├── XRayAnalyzer.jsx        # Primary radiograph coordinator
+│   │   ├── components/             # Modular UI components
+│   │   │   ├── ImageDropzone.jsx   # DICOM/PNG dropzone & pipeline selector
+│   │   │   ├── GradCamViewer.jsx   # Saliency viewer & opacity controls
+│   │   │   ├── ClinicalReportView.jsx # Tabs, 6-zone map & findings
+│   │   │   ├── ClinicalChatDrawer.jsx # Slide-out AI copilot drawer
+│   │   │   ├── ReferralModal.jsx   # Specialist referral letter generator
+│   │   │   ├── DoctorSignoffModal.jsx # Reviewer digital sign-off modal
+│   │   │   └── HistoryPanel.jsx    # Past study drawer synced with database
+│   │   └── hooks/
+│   │       └── useReportHistory.js # History hook with online/offline DB sync
+│   └── package.json
 │
-└── README.md                # This file
+├── Dockerfile.backend              # Backend container build
+├── Dockerfile.frontend             # Frontend Vite + Nginx build
+├── docker-compose.yml              # Multi-container orchestration
+├── .github/workflows/ci.yml        # Continuous integration pipeline
+├── run.bat                         # One-click Windows startup script
+└── README.md
 ```
 
 ---
 
-## 🔑 API Access
+## 🚀 Quick Start
 
-Gemini 2.5 Flash runs via secure inference API. Contact admin for enterprise API access.
-
-The API key should be configured in `backend/.env`:
-
-```env
-GEMINI_API_KEY=your_actual_key_here
+### Option 1: One-Click Windows Script
+Double-click or run from terminal:
+```cmd
+run.bat
 ```
 
-> [!IMPORTANT]
-> The `.env` file ships with a placeholder value `your_key_here`. You **must** replace it with a real key or the `/analyze` endpoint will fail.
-
----
-
-## 🖥️ Backend Setup
-
-Open a terminal and run:
-
+### Option 2: Docker Compose (Production Ready)
 ```bash
-cd D:/Prototype/backend
+# 1. Set your Gemini API key in .env or environment
+export GEMINI_API_KEY="your_api_key_here"
 
+# 2. Start backend, database, and frontend containers
+docker compose up --build
+```
+* Backend API: [http://localhost:8000](http://localhost:8000) (Docs: [http://localhost:8000/docs](http://localhost:8000/docs))
+* Frontend Application: [http://localhost:5173](http://localhost:5173)
+
+### Option 3: Manual Local Development
+
+#### 1. Backend Setup
+```bash
+cd backend
+
+# Install dependencies
 pip install -r requirements.txt
 
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+# Run automated tests
+pytest tests/ -v
+
+# Start FastAPI server
+python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-You should see:
-
-```
-INFO:     Uvicorn running on http://0.0.0.0:8000
-INFO:     Started reloader process
-```
-
-**Verify it's working:**
-
-```
-GET http://localhost:8000/health
-→ {"status": "ok"}
-```
-
-### Backend Dependencies
-
-| Package               | Purpose               |
-| --------------------- | --------------------- |
-| `fastapi`             | Web framework         |
-| `uvicorn`             | ASGI server           |
-| `python-multipart`    | File upload support   |
-| `google-generativeai` | MedVLM inference SDK  |
-| `reportlab`           | PDF generation        |
-| `pillow`              | Image processing      |
-| `pydantic`            | Data validation       |
-| `python-dotenv`       | Environment variables |
-
----
-
-## 🌐 Frontend Setup
-
-Open a **second terminal** and run:
-
+#### 2. Frontend Setup
 ```bash
-cd D:/Prototype/medvlm-frontend
+cd medvlm-frontend
 
+# Install dependencies & run dev server
 npm install
-
 npm run dev
 ```
 
-You should see:
+---
 
-```
-VITE v5.x.x  ready in XXX ms
-➜  Local:   http://localhost:5173/
-```
+## 📡 API Reference
 
-> [!NOTE]
-> The frontend reads `VITE_API_URL` from `.env` which defaults to `http://localhost:8000`. No changes needed if running both locally.
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/health` | Health check, active model, and engine capabilities |
+| `POST` | `/analyze` | Synchronous analysis (supports DICOM, PNG, JPG, and pipeline modes) |
+| `POST` | `/analyze-stream` | Real-time SSE streaming analysis (`model` → `report` → `done`) |
+| `POST` | `/gradcam` | Dynamic Grad-CAM heatmap generation for specified condition |
+| `GET` | `/studies` | List recent saved studies from database |
+| `GET` | `/studies/{id}` | Retrieve study details by ID |
+| `PATCH`| `/studies/{id}` | Update clinical notes or review status |
+| `POST` | `/studies/{id}/sign` | Radiologist digital sign-off and approval |
+| `DELETE`| `/studies/{id}` | Delete study record from database |
+| `GET` | `/studies/{id}/pdf`| Download diagnostic A4 PDF report by study ID |
+| `POST` | `/chat` | Grounded clinical dialogue copilot |
+| `POST` | `/referral-letter` | Specialist referral letter generator |
+| `POST` | `/grounded-insights`| Evidence-based medical literature search |
 
 ---
 
-## 🧪 Testing the Application
+## 🧪 Running Automated Tests
 
-1. **Open** [http://localhost:5173](http://localhost:5173) in your browser
-2. **Upload** any chest X-ray image (PNG or JPG)
-3. **Click** the **🔬 Analyze X-Ray** button
-4. **Wait** approximately 10 seconds for the Gemini 2.5 Flash inference
-5. **View** the results across four tabs:
+The backend includes a comprehensive test suite covering the entire system:
 
-| Tab          | Contents                                                        |
-| ------------ | --------------------------------------------------------------- |
-| **Report**   | Findings, Impression, Recommendations, Abnormality tags         |
-| **Findings** | AI confidence bar chart (Opacity, Cardiomegaly, Effusion, etc.) |
-| **Lung Map** | 2×3 visual grid of lung zones (clear ✓ / affected ⚠)            |
-| **Download** | Generate and download a professional PDF radiology report       |
+```bash
+cd backend
+pytest tests/ -v
+```
 
----
+Output:
+```
+tests/test_api.py::test_health_check PASSED
+tests/test_api.py::test_invalid_image_type_rejected PASSED
+tests/test_api.py::test_empty_image_rejected PASSED
+tests/test_api.py::test_generate_pdf_endpoint PASSED
+tests/test_api.py::test_study_lifecycle PASSED
+tests/test_local_model.py::test_png_preprocessing PASSED
+tests/test_local_model.py::test_dicom_processing_and_phi_scrubbing PASSED
+tests/test_local_model.py::test_gradcam_generation PASSED
+tests/test_local_model.py::test_concurrent_gradcam_thread_safety PASSED
+tests/test_pdf.py::test_build_pdf_basic PASSED
+tests/test_pdf.py::test_build_pdf_with_differentials_and_signoff PASSED
 
-## 📡 API Endpoints
-
-| Method    | Endpoint        | Description                          |
-| --------- | --------------- | ------------------------------------ |
-| `GET`     | `/health`       | Health check → `{"status": "ok"}`    |
-| `POST`    | `/analyze`      | Upload X-ray image → JSON report     |
-| `POST`    | `/generate-pdf` | Send report JSON → PDF file download |
-| `OPTIONS` | `/*`            | CORS preflight handler               |
-
-### Example: `/analyze` Response
-
-```json
-{
-  "findings": "The cardiac silhouette is normal in size...",
-  "impression": "No acute cardiopulmonary abnormality...",
-  "recommendations": "No immediate follow-up required...",
-  "severity": "normal",
-  "brief": "Your chest X-ray looks normal. No concerning findings were detected.",
-  "abnormalities": ["No significant abnormalities"],
-  "confidence_scores": {
-    "opacity": 0.05,
-    "cardiomegaly": 0.08,
-    "effusion": 0.03,
-    "pneumothorax": 0.01,
-    "consolidation": 0.04
-  },
-  "lung_zones": {
-    "upper_left": "clear",
-    "upper_right": "clear",
-    "middle_left": "clear",
-    "middle_right": "clear",
-    "lower_left": "clear",
-    "lower_right": "clear"
-  }
-}
+=========== 11 passed in 14.99s ===========
 ```
 
 ---
 
-## 🧠 Model Details
+## ⚠️ Medical Disclaimer
 
-| Attribute              | Value                                                                          |
-| ---------------------- | ------------------------------------------------------------------------------ |
-| **Model**              | Gemini 2.5 Flash v2.1                                                                 |
-| **Architecture**       | Vision Transformer + Clinical Language Head                                    |
-| **Training Data**      | CheXpert (224K) + MIMIC-CXR (228K) + NIH ChestX-ray14 (112K) + PadChest (161K) |
-| **Total Radiographs**  | 847,000 annotated chest radiographs                                            |
-| **Benchmark Accuracy** | 94.3% (CheXpert benchmark)                                                     |
-| **Avg Inference**      | 8–12 seconds                                                                   |
-
----
-
-## ⚠️ Disclaimer
-
-> This tool is for **clinical reference only**. It is **not** a substitute for professional medical diagnosis. Always consult a qualified radiologist or physician for clinical decision-making.
-
----
-
-## 🛠️ Tech Stack
-
-- **Frontend:** React 18 + Vite
-- **Backend:** Python 3.10+ / FastAPI
-- **AI Model:** Gemini 2.5 Flash v2.1 (Vision Transformer + Clinical Language Head)
-- **PDF Engine:** ReportLab
-- **Styling:** Inline CSS, system-ui font, no external UI libraries
+> MedVLM is designed as an **AI-assisted clinical decision support tool**. It is intended to assist medical professionals by providing objective deep learning pathology predictions and structured reporting. It does not replace independent diagnostic evaluation by a licensed radiologist or attending physician.

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 
 const STORAGE_KEY = "medvlm_report_history";
 const MAX_HISTORY = 50;
+const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 /**
  * Resize an image file to a thumbnail base64 string (max 120x120).
@@ -42,19 +43,74 @@ function formatTime(date) {
 export default function useReportHistory() {
   const [history, setHistory] = useState([]);
 
-  /* Load from localStorage on mount */
+  /* Load from localStorage on mount & sync with backend studies API */
   useEffect(() => {
+    let localData = [];
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setHistory(JSON.parse(raw));
-    } catch { /* silently ignore parse errors */ }
-  }, []);
+      if (raw) localData = JSON.parse(raw);
+      setHistory(localData);
+    } catch {}
 
-  /* Persist to localStorage whenever history changes */
-  const persist = useCallback((updated) => {
-    setHistory(updated);
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(updated)); }
-    catch { /* storage full — silently ignore */ }
+    // Background sync with database studies
+    fetch(`${API}/studies`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((studies) => {
+        if (Array.isArray(studies) && studies.length > 0) {
+          const sampleMap = {
+            "sample_normal.jpg": "/samples/sample_normal.jpg",
+            "sample_cardiomegaly.jpg": "/samples/sample_cardiomegaly.jpg",
+            "sample_pneumonia.jpg": "/samples/sample_pneumonia.jpg",
+            "normal.jpg": "/samples/sample_normal.jpg",
+            "cardiomegaly.jpg": "/samples/sample_cardiomegaly.jpg",
+            "pneumonia.jpg": "/samples/sample_pneumonia.jpg",
+          };
+          const remoteItems = studies.map((s) => {
+            const d = s.created_at ? new Date(s.created_at) : new Date();
+            const basePreview = s.image_preview_url || sampleMap[s.filename] || null;
+            return {
+              id: s.id,
+              timestamp: d.toISOString(),
+              date: formatDate(d),
+              time: formatTime(d),
+              imageName: s.filename || "radiograph.png",
+              imageThumbnail: basePreview || null,
+              image_preview_url: basePreview || null,
+              preview: basePreview || null,
+              heatmap_data_url: s.heatmap_data_url || null,
+              severity: s.severity,
+              findings: s.findings,
+              impression: s.impression,
+              recommendations: s.recommendations,
+              brief: s.brief,
+              abnormalities: s.abnormalities || [],
+              confidence_scores: s.confidence_scores || {},
+              lung_zones: s.lung_zones || {},
+              differentials: s.differentials || [],
+              icd10_codes: s.icd10_codes || [],
+              detected_pathologies: s.detected_pathologies || [],
+              modality: s.modality,
+              view_position: s.view_position,
+              patient_age: s.patient_age,
+              patient_gender: s.patient_gender,
+              status: s.status,
+              doctor_notes: s.doctor_notes,
+              signed_by: s.signed_by,
+              doctor_license: s.doctor_license,
+              signed_at: s.signed_at,
+            };
+          });
+
+          // Merge without duplicates (favoring remote studies)
+          setHistory((prev) => {
+            const existingIds = new Set(remoteItems.map((r) => r.id));
+            const merged = [...remoteItems, ...prev.filter((p) => !existingIds.has(p.id))];
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(merged.slice(0, MAX_HISTORY))); } catch {}
+            return merged.slice(0, MAX_HISTORY);
+          });
+        }
+      })
+      .catch(() => {});
   }, []);
 
   /* Save a new report entry */
@@ -66,26 +122,38 @@ export default function useReportHistory() {
       catch { thumbnail = null; }
     }
 
+    const sampleMap = {
+      "sample_normal.jpg": "/samples/sample_normal.jpg",
+      "sample_cardiomegaly.jpg": "/samples/sample_cardiomegaly.jpg",
+      "sample_pneumonia.jpg": "/samples/sample_pneumonia.jpg",
+      "normal.jpg": "/samples/sample_normal.jpg",
+      "cardiomegaly.jpg": "/samples/sample_cardiomegaly.jpg",
+      "pneumonia.jpg": "/samples/sample_pneumonia.jpg",
+    };
+    const basePreview =
+      report.image_preview_url ||
+      report.preview ||
+      thumbnail ||
+      sampleMap[report.filename] ||
+      sampleMap[imageFile?.name] ||
+      null;
+
     const entry = {
-      id: crypto.randomUUID(),
+      ...report,
+      id: report.id || crypto.randomUUID(),
       timestamp: now.toISOString(),
       date: formatDate(now),
       time: formatTime(now),
-      imageName: imageFile?.name || "unknown.png",
+      imageName: imageFile?.name || report.filename || "radiograph.png",
       imageSize: imageFile?.size || 0,
-      imageThumbnail: thumbnail,
-      severity: report.severity,
-      findings: report.findings,
-      impression: report.impression,
-      recommendations: report.recommendations,
-      brief: report.brief,
-      abnormalities: report.abnormalities,
-      confidence_scores: report.confidence_scores,
-      lung_zones: report.lung_zones,
+      imageThumbnail: thumbnail || basePreview || null,
+      image_preview_url: basePreview || null,
+      preview: basePreview || null,
+      heatmap_data_url: report.heatmap_data_url || null,
     };
 
     setHistory((prev) => {
-      const updated = [entry, ...prev].slice(0, MAX_HISTORY);
+      const updated = [entry, ...prev.filter((p) => p.id !== entry.id)].slice(0, MAX_HISTORY);
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(updated)); } catch {}
       return updated;
     });
@@ -93,24 +161,23 @@ export default function useReportHistory() {
     return entry;
   }, []);
 
-  /* Delete a single report */
+  /* Delete a single report from both local cache and backend DB */
   const deleteReport = useCallback((id) => {
     setHistory((prev) => {
       const updated = prev.filter((e) => e.id !== id);
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(updated)); } catch {}
       return updated;
     });
+
+    // Best-effort delete from backend DB
+    fetch(`${API}/studies/${id}`, { method: "DELETE" }).catch(() => {});
   }, []);
 
   /* Clear all history */
   const clearHistory = useCallback(() => {
-    persist([]);
-  }, [persist]);
+    setHistory([]);
+    try { localStorage.removeItem(STORAGE_KEY); } catch {}
+  }, []);
 
-  /* Get a single report by ID */
-  const getReport = useCallback((id) => {
-    return history.find((e) => e.id === id) || null;
-  }, [history]);
-
-  return { history, saveReport, deleteReport, clearHistory, getReport };
+  return { history, saveReport, deleteReport, clearHistory };
 }

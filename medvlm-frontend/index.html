@@ -7,74 +7,116 @@
     <link rel="icon" type="image/png" href="/medvlm-logo.png" />
     <link rel="apple-touch-icon" href="/medvlm-logo.png" />
 
-    <!-- PWA -->
+    <!-- PWA & Mobile Meta -->
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#00d4aa" />
+    <meta name="theme-color" content="#090d16" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="MedVLM" />
+    <meta name="apple-mobile-web-app-title" content="MedVLM Studio" />
 
     <!-- Viewport -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
+    <!-- Google Fonts: Plus Jakarta Sans, Inter, JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
     <!-- SEO -->
-    <title>MedVLM — AI Radiology Assistant</title>
-    <meta name="description" content="AI-powered chest X-ray analysis. Upload a radiograph and get a structured clinical report with findings, severity, lung zone mapping, and a downloadable PDF — powered by Gemini 2.5 Flash." />
-    <meta name="keywords" content="radiology, chest X-ray, AI, medical, Gemini, report generation, lung analysis" />
-    <meta name="author" content="MedVLM" />
+    <title>MedVLM Studio — Clinical AI Radiology Workstation</title>
+    <meta
+      name="description"
+      content="Clinical-grade AI radiology workstation. Chest radiograph analysis powered by TorchXRayVision DenseNet-121 and Gemini Multimodal CDS with Grad-CAM visual heatmaps, 6-zone lung quantification, ICD-10 coding, and interactive clinical copilot."
+    />
+    <meta name="keywords" content="radiology, chest X-ray, AI, clinical decision support, DenseNet, Gemini, Grad-CAM, DICOM" />
+    <meta name="author" content="MedVLM Clinical AI" />
 
     <!-- Open Graph -->
-    <meta property="og:title" content="MedVLM — AI Radiology Assistant" />
-    <meta property="og:description" content="Upload a chest X-ray. Get an AI-generated clinical report in seconds." />
+    <meta property="og:title" content="MedVLM Studio — Clinical AI Radiology Workstation" />
+    <meta property="og:description" content="State-of-the-art multimodal AI radiology workstation for chest radiograph interpretation." />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="/medvlm-logo.png" />
 
-    <!-- Loading screen styles (shown before React mounts) -->
+    <!-- High-Precision Clinical Loading Screen -->
     <style>
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-      body {
-        background: #0a0f1a;
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body {
+        background: #090d16;
+        color: #f1f5f9;
         font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        overflow-x: hidden;
       }
       #app-loader {
         position: fixed; inset: 0; z-index: 99999;
         display: flex; flex-direction: column;
         align-items: center; justify-content: center;
-        background: #0a0f1a;
-        gap: 16px;
-        transition: opacity 0.4s ease;
+        background: radial-gradient(circle at 50% 40%, #0f172a 0%, #090d16 100%);
+        gap: 20px;
+        transition: opacity 0.4s ease, visibility 0.4s ease;
       }
-      #app-loader.hidden { opacity: 0; pointer-events: none; }
+      #app-loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+      .loader-emblem {
+        position: relative;
+        width: 64px; height: 64px;
+        display: flex; align-items: center; justify-content: center;
+      }
       .loader-ring {
-        width: 48px; height: 48px;
-        border: 3px solid rgba(0,212,170,0.15);
-        border-top-color: #00d4aa;
+        position: absolute; inset: 0;
+        border: 2px solid rgba(6, 182, 212, 0.15);
+        border-top-color: #06b6d4;
+        border-right-color: #0ea5e9;
         border-radius: 50%;
-        animation: spin 0.9s linear infinite;
+        animation: loaderSpin 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
       }
-      .loader-text {
-        font-size: 13px; font-weight: 600; color: #00d4aa;
-        letter-spacing: 1.5px; font-family: 'Courier New', monospace;
+      .loader-pulse {
+        width: 14px; height: 14px;
+        background: #06b6d4;
+        border-radius: 50%;
+        box-shadow: 0 0 16px rgba(6, 182, 212, 0.8);
+        animation: loaderPulse 1.6s ease-in-out infinite;
+      }
+      .loader-text-group {
+        display: flex; flex-direction: column; align-items: center; gap: 4px;
+      }
+      .loader-title {
+        font-size: 15px; font-weight: 700; color: #f1f5f9;
+        letter-spacing: 0.5px; font-family: 'Plus Jakarta Sans', sans-serif;
+      }
+      .loader-sub {
+        font-size: 11px; font-weight: 600; color: #06b6d4;
+        letter-spacing: 2px; font-family: 'JetBrains Mono', monospace;
         text-transform: uppercase;
       }
-      @keyframes spin { to { transform: rotate(360deg); } }
+      @keyframes loaderSpin { to { transform: rotate(360deg); } }
+      @keyframes loaderPulse { 0%, 100% { opacity: 0.4; transform: scale(0.85); } 50% { opacity: 1; transform: scale(1.15); } }
     </style>
   </head>
   <body>
-    <!-- Instant loading screen — hidden once React mounts -->
+    <!-- Instant clinical loading screen — removed once React mounts -->
     <div id="app-loader">
-      <div class="loader-ring"></div>
-      <div class="loader-text">Loading MedVLM</div>
+      <div class="loader-emblem">
+        <div class="loader-ring"></div>
+        <div class="loader-pulse"></div>
+      </div>
+      <div class="loader-text-group">
+        <div class="loader-title">MedVLM Studio</div>
+        <div class="loader-sub">Initializing Diagnostic Engine...</div>
+      </div>
     </div>
 
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
     <script>
-      // Hide loader once React has rendered
       window.__hideLoader = function() {
         var el = document.getElementById('app-loader');
-        if (el) { el.classList.add('hidden'); setTimeout(function(){ el.remove(); }, 500); }
+        if (el) {
+          el.classList.add('hidden');
+          setTimeout(function() { if (el && el.parentNode) el.parentNode.removeChild(el); }, 450);
+        }
       };
     </script>
   </body>

@@ -1,20 +1,27 @@
 import { useState, useMemo } from "react";
-import "./HistoryPanel.css";
+import {
+  Clock,
+  Search,
+  Trash2,
+  Calendar,
+  X,
+  ChevronRight,
+  FileText,
+  AlertTriangle,
+  CheckCircle2,
+  AlertCircle,
+  FolderOpen,
+} from "lucide-react";
 
-const C = {
-  teal: "#00d4aa", tealDim: "rgba(0,212,170,0.15)", tealBorder: "rgba(0,212,170,0.3)",
-  red: "#ff4757", green: "#2ed573", orange: "#ffa502",
-  bg: "#0d1117", surface: "#111827", border: "rgba(255,255,255,0.08)",
-  borderLight: "rgba(255,255,255,0.06)", borderFaint: "rgba(255,255,255,0.04)",
-  text: "#f1f5f9", muted: "#94a3b8", mutedDark: "#475569",
+const sevConfig = {
+  normal: { color: "#10b981", bg: "rgba(16, 185, 129, 0.12)", border: "rgba(16, 185, 129, 0.3)" },
+  mild: { color: "#f59e0b", bg: "rgba(245, 158, 11, 0.12)", border: "rgba(245, 158, 11, 0.3)" },
+  moderate: { color: "#f97316", bg: "rgba(249, 115, 22, 0.14)", border: "rgba(249, 115, 22, 0.35)" },
+  severe: { color: "#ef4444", bg: "rgba(239, 68, 68, 0.14)", border: "rgba(239, 68, 68, 0.35)" },
 };
 
-const font = "'Inter', system-ui, -apple-system, sans-serif";
-const mono = "'Courier New', monospace";
-
-const sevColors = { normal: C.green, mild: C.orange, moderate: C.red, severe: C.red };
-
 function getDateGroup(timestamp) {
+  if (!timestamp) return "RECENT";
   const d = new Date(timestamp);
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -25,24 +32,27 @@ function getDateGroup(timestamp) {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" }).toUpperCase();
 }
 
-function storageSize() {
-  try {
-    const raw = localStorage.getItem("medvlm_report_history");
-    return raw ? (new Blob([raw]).size / 1024).toFixed(1) : "0";
-  } catch { return "0"; }
-}
-
-export default function HistoryPanel({ history, onSelectReport, onDeleteReport, onClearHistory, isOpen, onClose }) {
+export default function HistoryPanel({
+  history,
+  onSelectReport,
+  onDeleteReport,
+  onClearHistory,
+  isOpen,
+  onClose,
+}) {
   const [search, setSearch] = useState("");
   const [confirmClear, setConfirmClear] = useState(false);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return history;
     const q = search.toLowerCase();
-    return history.filter((e) =>
-      (e.imageName || "").toLowerCase().includes(q) ||
-      (e.severity || "").toLowerCase().includes(q) ||
-      (e.date || "").toLowerCase().includes(q)
+    return history.filter(
+      (e) =>
+        (e.imageName || "").toLowerCase().includes(q) ||
+        (e.severity || "").toLowerCase().includes(q) ||
+        (e.date || "").toLowerCase().includes(q) ||
+        (e.id || "").toLowerCase().includes(q) ||
+        (e.brief || "").toLowerCase().includes(q)
     );
   }, [history, search]);
 
@@ -60,186 +70,317 @@ export default function HistoryPanel({ history, onSelectReport, onDeleteReport, 
     return groups;
   }, [filtered]);
 
+  if (!isOpen) return null;
+
   return (
-    <>
-      {/* Overlay */}
-      {isOpen && (
-        <div onClick={onClose} style={{
-          position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)",
-          backdropFilter: "blur(2px)", WebkitBackdropFilter: "blur(2px)",
-          zIndex: 999, transition: "opacity .3s",
-        }} />
-      )}
-
-      {/* Panel */}
-      <div style={{
-        position: "fixed", top: 0, right: 0, width: "min(380px, 100vw)", height: "100vh",
-        background: C.bg, borderLeft: `1px solid ${C.border}`, zIndex: 1000,
-        transform: isOpen ? "translateX(0)" : "translateX(100%)",
-        transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-        boxShadow: isOpen ? "-20px 0 60px rgba(0,0,0,0.5)" : "none",
-        display: "flex", flexDirection: "column", fontFamily: font,
-      }}>
-
-        {/* ── Header ── */}
-        <div style={{
-          height: 60, padding: "0 20px", display: "flex", alignItems: "center", justifyContent: "space-between",
-          borderBottom: `1px solid ${C.borderLight}`, flexShrink: 0,
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 14 }}>🕐</span>
-            <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1.2, textTransform: "uppercase", color: C.teal, fontFamily: mono }}>REPORT HISTORY</span>
-            <span style={{
-              fontSize: 10, fontWeight: 600, color: C.muted, background: "rgba(255,255,255,0.05)",
-              padding: "2px 8px", borderRadius: 10, border: `1px solid ${C.border}`, fontFamily: mono,
-            }}>{history.length} reports</span>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            {history.length > 0 && (
-              <button
-                onClick={() => { if (confirmClear) { onClearHistory(); setConfirmClear(false); } else setConfirmClear(true); }}
-                onMouseLeave={() => setConfirmClear(false)}
-                title="Clear all"
-                style={{
-                  width: 32, height: 32, borderRadius: 6, border: "none", cursor: "pointer",
-                  background: confirmClear ? "rgba(255,71,87,0.15)" : "transparent",
-                  color: confirmClear ? C.red : C.mutedDark, fontSize: 14,
-                  display: "flex", alignItems: "center", justifyContent: "center", transition: "all .15s",
-                }}
-              >{confirmClear ? "✓" : "🗑"}</button>
-            )}
-            <button onClick={onClose} style={{
-              width: 32, height: 32, borderRadius: 6, border: "none", cursor: "pointer",
-              background: "transparent", color: C.muted, fontSize: 18,
-              display: "flex", alignItems: "center", justifyContent: "center", transition: "color .15s",
-            }} onMouseEnter={(e) => e.currentTarget.style.color = C.text}
-              onMouseLeave={(e) => e.currentTarget.style.color = C.muted}>✕</button>
-          </div>
-        </div>
-
-        {/* ── Search ── */}
-        <div style={{ padding: "12px 16px", borderBottom: `1px solid ${C.borderFaint}`, flexShrink: 0 }}>
-          <div style={{ position: "relative" }}>
-            <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: 13, pointerEvents: "none" }}>🔍</span>
-            <input
-              value={search} onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search reports..."
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 9990,
+        background: "rgba(5, 8, 16, 0.7)",
+        backdropFilter: "blur(6px)",
+        WebkitBackdropFilter: "blur(6px)",
+        display: "flex",
+        justifyContent: "flex-end",
+      }}
+    >
+      <div className="mvlm-drawer">
+        {/* Drawer Header */}
+        <div
+          style={{
+            padding: "20px 24px",
+            borderBottom: "1px solid rgba(148, 163, 184, 0.12)",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <Clock size={18} color="var(--color-cyan)" />
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: "#f8fafc", margin: 0 }}>
+              Studies Archive
+            </h3>
+            <span
               style={{
-                width: "100%", padding: "8px 12px 8px 36px", borderRadius: 8,
-                background: "rgba(255,255,255,0.04)", border: `1px solid ${C.border}`,
-                color: C.text, fontSize: 13, fontFamily: font, outline: "none", transition: "border-color .2s",
+                fontSize: 11,
+                fontFamily: "var(--font-mono)",
+                background: "rgba(6, 182, 212, 0.12)",
+                color: "var(--color-cyan)",
+                padding: "2px 7px",
+                borderRadius: "10px",
               }}
-              onFocus={(e) => e.target.style.borderColor = "rgba(0,212,170,0.4)"}
-              onBlur={(e) => e.target.style.borderColor = C.border}
-            />
+            >
+              {history.length}
+            </span>
           </div>
+
+          <button
+            onClick={onClose}
+            style={{
+              background: "transparent",
+              border: "none",
+              color: "var(--text-muted)",
+              cursor: "pointer",
+              padding: 4,
+            }}
+          >
+            <X size={18} />
+          </button>
         </div>
 
-        {/* ── History List ── */}
-        <div className="history-list" style={{ flex: 1, overflowY: "auto" }}>
-          {filtered.length === 0 ? (
-            /* Empty state */
-            <div style={{ padding: "60px 20px", textAlign: "center" }}>
-              <img src="/medvlm-logo.png" alt="" style={{ width: 48, height: 48, opacity: 0.2, marginBottom: 12, filter: "grayscale(0.5)" }} />
-              <div style={{ fontSize: 16, fontWeight: 600, color: C.muted }}>
-                {search ? "No matching reports" : "No reports yet"}
-              </div>
-              <div style={{ fontSize: 13, color: C.mutedDark, marginTop: 6 }}>
-                {search ? "Try a different search term" : "Analyze an X-ray to see history here"}
-              </div>
+        {/* Search & Actions Bar */}
+        <div style={{ padding: "14px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              background: "rgba(15, 23, 42, 0.8)",
+              border: "1px solid rgba(148, 163, 184, 0.15)",
+              borderRadius: "8px",
+              padding: "8px 12px",
+            }}
+          >
+            <Search size={14} color="var(--text-dim)" />
+            <input
+              type="text"
+              placeholder="Search by ID, severity, or pathology..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              style={{
+                flex: 1,
+                background: "transparent",
+                border: "none",
+                color: "#f8fafc",
+                fontSize: 12,
+                outline: "none",
+              }}
+            />
+            {search && (
+              <button
+                onClick={() => setSearch("")}
+                style={{ background: "transparent", border: "none", color: "var(--text-dim)", cursor: "pointer" }}
+              >
+                <X size={12} />
+              </button>
+            )}
+          </div>
+
+          {history.length > 0 && (
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              {confirmClear ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontSize: 11, color: "#fca5a5" }}>Delete all studies?</span>
+                  <button
+                    onClick={() => {
+                      onClearHistory();
+                      setConfirmClear(false);
+                    }}
+                    className="mvlm-btn-secondary"
+                    style={{ padding: "3px 8px", fontSize: 11, color: "#ef4444", borderColor: "#ef4444" }}
+                  >
+                    Confirm
+                  </button>
+                  <button
+                    onClick={() => setConfirmClear(false)}
+                    className="mvlm-btn-secondary"
+                    style={{ padding: "3px 8px", fontSize: 11 }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setConfirmClear(true)}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "var(--text-dim)",
+                    fontSize: 11,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 4,
+                  }}
+                >
+                  <Trash2 size={12} />
+                  <span>Clear Archive</span>
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Study Cards List */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "0 20px 20px" }}>
+          {history.length === 0 ? (
+            <div
+              style={{
+                padding: "60px 20px",
+                textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 12,
+                color: "var(--text-dim)",
+              }}
+            >
+              <FolderOpen size={36} strokeWidth={1.5} />
+              <div style={{ fontSize: 13, color: "var(--text-muted)" }}>No studies in archive yet</div>
+              <span style={{ fontSize: 11.5, maxWidth: 220, lineHeight: 1.5 }}>
+                Analyzed radiographs and reports are automatically recorded here.
+              </span>
+            </div>
+          ) : filtered.length === 0 ? (
+            <div style={{ padding: "40px 20px", textAlign: "center", fontSize: 12, color: "var(--text-muted)" }}>
+              No matches found for "{search}"
             </div>
           ) : (
             grouped.map((group) => (
-              <div key={group.label}>
-                {/* Date group header */}
-                <div style={{
-                  fontSize: 10, fontWeight: 700, letterSpacing: 1.2, color: C.teal,
-                  fontFamily: mono, padding: "10px 16px 4px", position: "sticky", top: 0,
-                  background: C.bg, borderBottom: `1px solid ${C.borderFaint}`, zIndex: 1,
-                }}>{group.label}</div>
+              <div key={group.label} style={{ marginBottom: 16 }}>
+                <div
+                  style={{
+                    fontSize: 10.5,
+                    fontWeight: 700,
+                    fontFamily: "var(--font-mono)",
+                    color: "var(--text-dim)",
+                    marginBottom: 8,
+                    letterSpacing: "0.06em",
+                  }}
+                >
+                  {group.label}
+                </div>
 
-                {group.entries.map((entry, i) => (
-                  <div
-                    key={entry.id}
-                    className="history-card"
-                    onClick={() => onSelectReport(entry)}
-                    style={{
-                      display: "flex", gap: 12, padding: "12px 16px", cursor: "pointer",
-                      borderBottom: `1px solid ${C.borderFaint}`, transition: "background .15s",
-                      animationDelay: `${i * 0.04}s`, position: "relative",
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.03)"}
-                    onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
-                  >
-                    {/* Thumbnail */}
-                    <div className="history-thumbnail" style={{
-                      width: 48, height: 48, borderRadius: 8, flexShrink: 0, overflow: "hidden",
-                      border: `1px solid rgba(255,255,255,0.1)`, background: C.surface,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                    }}>
-                      {entry.imageThumbnail ? (
-                        <img src={entry.imageThumbnail} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      ) : (
-                        <img src="/medvlm-logo.png" alt="" style={{ width: 24, height: 24, opacity: 0.3, filter: "grayscale(0.5)" }} />
-                      )}
-                    </div>
-
-                    {/* Info */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
-                        <span style={{
-                          fontSize: 13, fontWeight: 600, color: C.text, overflow: "hidden",
-                          textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 140,
-                        }}>{entry.imageName}</span>
-                        <span style={{
-                          fontSize: 9, fontWeight: 700, textTransform: "uppercase",
-                          padding: "2px 7px", borderRadius: 10, whiteSpace: "nowrap",
-                          color: sevColors[entry.severity] || C.muted,
-                          background: `${sevColors[entry.severity] || C.muted}18`,
-                          border: `1px solid ${sevColors[entry.severity] || C.muted}40`,
-                        }}>{entry.severity}</span>
-                      </div>
-                      <div style={{ fontSize: 11, color: C.mutedDark, marginBottom: 3 }}>
-                        {entry.time}
-                        <span style={{ margin: "0 5px", opacity: 0.4 }}>·</span>
-                        {(entry.abnormalities || []).length} findings
-                      </div>
-                      <div style={{
-                        fontSize: 12, color: "#64748b", lineHeight: 1.5,
-                        overflow: "hidden", display: "-webkit-box",
-                        WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
-                      }}>{entry.brief}</div>
-                    </div>
-
-                    {/* Delete action */}
-                    <div className="history-actions" style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); onDeleteReport(entry.id); }}
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {group.entries.map((entry) => {
+                    const sev = sevConfig[entry.severity?.toLowerCase()] || sevConfig.normal;
+                    return (
+                      <div
+                        key={entry.id}
+                        onClick={() => onSelectReport(entry)}
                         style={{
-                          width: 24, height: 24, borderRadius: "50%", border: "none", cursor: "pointer",
-                          background: "rgba(255,71,87,0.1)", color: C.red, fontSize: 11,
-                          display: "flex", alignItems: "center", justifyContent: "center", transition: "all .15s",
+                          background: "rgba(15, 23, 42, 0.7)",
+                          border: "1px solid rgba(148, 163, 184, 0.12)",
+                          borderRadius: "10px",
+                          padding: "10px 12px",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: 12,
+                          transition: "all 0.15s ease",
                         }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,71,87,0.25)"}
-                        onMouseLeave={(e) => e.currentTarget.style.background = "rgba(255,71,87,0.1)"}
-                      >✕</button>
-                    </div>
-                  </div>
-                ))}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.borderColor = "var(--color-cyan)";
+                          e.currentTarget.style.background = "rgba(15, 23, 42, 0.95)";
+                          e.currentTarget.style.transform = "translateX(-2px)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.borderColor = "rgba(148, 163, 184, 0.12)";
+                          e.currentTarget.style.background = "rgba(15, 23, 42, 0.7)";
+                          e.currentTarget.style.transform = "translateX(0)";
+                        }}
+                      >
+                        {/* Thumbnail / Emblem */}
+                        <div
+                          style={{
+                            width: 44,
+                            height: 44,
+                            borderRadius: "6px",
+                            background: "#050810",
+                            border: "1px solid rgba(148, 163, 184, 0.15)",
+                            overflow: "hidden",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                          }}
+                        >
+                          {entry.imageThumbnail || entry.preview ? (
+                            <img
+                              src={entry.imageThumbnail || entry.preview}
+                              alt="Thumbnail"
+                              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                            />
+                          ) : (
+                            <FileText size={18} color="var(--text-dim)" />
+                          )}
+                        </div>
+
+                        {/* Study Details */}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                            <span
+                              style={{
+                                fontSize: 12,
+                                fontWeight: 700,
+                                fontFamily: "var(--font-mono)",
+                                color: "#f8fafc",
+                              }}
+                            >
+                              {entry.id || "Study"}
+                            </span>
+                            <span
+                              style={{
+                                fontSize: 9.5,
+                                fontWeight: 700,
+                                fontFamily: "var(--font-mono)",
+                                color: sev.color,
+                                background: sev.bg,
+                                padding: "1px 5px",
+                                borderRadius: "3px",
+                              }}
+                            >
+                              {entry.severity?.toUpperCase() || "NORMAL"}
+                            </span>
+                          </div>
+
+                          <div
+                            style={{
+                              fontSize: 11,
+                              color: "var(--text-muted)",
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            {entry.brief || entry.impression || entry.imageName || "Radiology study"}
+                          </div>
+
+                          <span style={{ fontSize: 10, color: "var(--text-dim)" }}>
+                            {entry.date ? new Date(entry.date).toLocaleDateString() : ""}
+                          </span>
+                        </div>
+
+                        {/* Delete Single Action */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteReport(entry.id);
+                          }}
+                          style={{
+                            background: "transparent",
+                            border: "none",
+                            color: "var(--text-dim)",
+                            cursor: "pointer",
+                            padding: 6,
+                            borderRadius: "4px",
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.color = "#ef4444")}
+                          onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-dim)")}
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             ))
           )}
         </div>
-
-        {/* ── Footer ── */}
-        <div style={{
-          height: 48, padding: "0 16px", display: "flex", alignItems: "center", justifyContent: "space-between",
-          borderTop: `1px solid ${C.borderLight}`, flexShrink: 0,
-        }}>
-          <span style={{ fontSize: 10, color: C.mutedDark, fontFamily: mono }}>MedVLM-7B · Local Storage</span>
-          <span style={{ fontSize: 10, color: C.mutedDark, fontFamily: mono }}>Using {storageSize()} KB</span>
-        </div>
       </div>
-    </>
+    </div>
   );
 }
