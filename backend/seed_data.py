@@ -73,7 +73,7 @@ def seed_clinical_studies():
             "brief": "The X-ray indicates an enlarged heart silhouette with mild fluid at the base of the right lung. Please discuss these findings with your cardiologist.",
             "language": "English",
             "confidence_scores_json": json.dumps({"opacity": 0.48, "cardiomegaly": 0.88, "effusion": 0.62, "pneumothorax": 0.02, "consolidation": 0.28}),
-            "lung_zones_json": json.dumps({"upper_left": "clear", "upper_right": "clear", "middle_left": "clear", "middle_right": "clear", "lower_left": "affected", "lower_right": "affected"}),
+            "lung_zones_json": json.dumps({"upper_left": "clear", "upper_right": "clear", "middle_left": "clear", "middle_right": "affected", "lower_left": "clear", "lower_right": "affected"}),
             "abnormalities_json": json.dumps(["Cardiomegaly", "Bibasilar Vascular Cephalization", "Right Pleural Effusion"]),
             "differentials_json": json.dumps([
                 {"condition": "Congestive Heart Failure", "likelihood": "high", "reasoning": "Enlarged CTR with bibasilar congestion and effusion."},

@@ -6,6 +6,7 @@ belongs in a GenAI-framed project rather than a plain classifier demo.
 """
 
 import json
+from datetime import datetime
 from google.genai import types
 from app_config import client, MODEL_NAME
 
@@ -18,9 +19,9 @@ CANDIDATE_MODELS = [
 ]
 
 _PROMPT_TEMPLATE = """Draft a formal, professional medical specialist referral letter based on this
-chest X-ray report. Use standard clinical referral letter format (date placeholder,
-salutation, clinical summary, reason for referral, requested action, closing).
+chest X-ray report. Use standard clinical referral letter format.
 
+Current Date: {current_date}
 Patient name: {patient_name}
 Referring facility: {referring_facility}
 Target Specialty: {target_specialty}
@@ -29,7 +30,11 @@ Clinical Priority: {priority}
 Report data:
 {report_json}
 
-Write only the letter text, ready to be placed on letterhead. Do not add commentary."""
+Formatting Instructions:
+- State the date clearly as {current_date}.
+- Use clean, professional typography. Do NOT include ASCII art dividing lines (e.g. no '=====' or '-----' lines).
+- Keep sections organized and concise so the entire letter fits seamlessly on a single page letterhead.
+- Write only the letter text ready to be placed on clinic letterhead. Do not add conversational commentary."""
 
 
 def _build_fallback_referral_letter(
@@ -40,6 +45,7 @@ def _build_fallback_referral_letter(
     priority: str,
 ) -> str:
     """Deterministic, clinically structured fallback referral letter when LLM API is unreachable."""
+    current_date = datetime.now().strftime("%B %d, %Y")
     severity = str(report_context.get("severity", "moderate")).upper()
     findings = report_context.get("findings", "Radiographic evaluation completed.")
     impression = report_context.get("impression", "See clinical findings.")
@@ -48,11 +54,11 @@ def _build_fallback_referral_letter(
     primary_diff = differentials[0].get("condition", "Underlying cardiopulmonary condition") if differentials else "Cardiopulmonary pathology"
 
     return f"""CLINICAL SPECIALIST REFERRAL LETTER
-================================================================================
+
 Referring Facility: {referring_facility}
 Target Specialty  : {target_specialty}
 Clinical Priority : {priority.upper()}
-Date              : [Current Date]
+Date              : {current_date}
 
 To: Attending Specialist, {target_specialty}
 Re: Consultation and Diagnostic Evaluation for {patient_name}
@@ -79,9 +85,7 @@ Thank you for your dedicated care in managing this patient. Please contact our r
 Sincerely,
 
 Attending Radiologist / Referring Physician
-{referring_facility}
-MedVLM Clinical Decision Support System
-================================================================================"""
+{referring_facility}"""
 
 
 def run_referral_agent(
@@ -92,7 +96,9 @@ def run_referral_agent(
     priority: str = "urgent",
 ) -> str:
     """Generates formal specialist referral letter with resilient model failover and offline fallback."""
+    current_date = datetime.now().strftime("%B %d, %Y")
     prompt = _PROMPT_TEMPLATE.format(
+        current_date=current_date,
         patient_name=patient_name or "Patient",
         referring_facility=referring_facility or "MedVLM Clinic",
         target_specialty=target_specialty or "Specialist Care",

@@ -57,7 +57,16 @@ export default function ReferralModal({ isOpen, onClose, report }) {
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      setLetter(data.letter);
+      const formattedDate = new Date().toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+      const cleaned = (data.letter || "")
+        .replace(/\[Current Date\]/gi, formattedDate)
+        .replace(/={10,}/g, "")
+        .trim();
+      setLetter(cleaned);
     } catch (err) {
       alert("Failed to generate referral letter: " + err.message);
     } finally {
@@ -76,27 +85,130 @@ export default function ReferralModal({ isOpen, onClose, report }) {
   const handlePrint = () => {
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
+
+    const formattedDate = new Date().toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    const priorityLabel = PRIORITIES.find((p) => p.id === priority)?.label || priority.toUpperCase();
+
+    // Remove any redundant top header lines that match the letterhead banner
+    let sanitizedContent = (letter || "")
+      .replace(/\[Current Date\]/gi, formattedDate)
+      .replace(/={10,}/g, "")
+      .replace(/^CLINICAL SPECIALIST REFERRAL LETTER\s*/i, "")
+      .trim();
+
     printWindow.document.write(`
+      <!DOCTYPE html>
       <html>
         <head>
+          <meta charset="utf-8" />
           <title>Specialist Referral — ${patientName}</title>
           <style>
-            body { font-family: 'Inter', system-ui, sans-serif; padding: 40px; color: #0f172a; line-height: 1.6; }
-            pre { white-space: pre-wrap; font-family: inherit; font-size: 14px; }
-            .header { border-bottom: 2px solid #0284c7; padding-bottom: 12px; margin-bottom: 24px; }
+            @page {
+              size: letter portrait;
+              margin: 14mm 18mm 12mm 18mm;
+            }
+            * {
+              box-sizing: border-box;
+            }
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+              color: #0f172a;
+              line-height: 1.48;
+              font-size: 10.5pt;
+              margin: 0;
+              padding: 0;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+            .letterhead {
+              border-bottom: 2.5px solid #0284c7;
+              padding-bottom: 12px;
+              margin-bottom: 16px;
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-end;
+            }
+            .facility-name {
+              font-size: 15.5pt;
+              font-weight: 800;
+              color: #0f172a;
+              letter-spacing: -0.01em;
+              margin: 0 0 3px 0;
+            }
+            .sub-title {
+              font-size: 8.5pt;
+              color: #64748b;
+              text-transform: uppercase;
+              letter-spacing: 0.05em;
+              font-weight: 600;
+              margin: 0;
+            }
+            .doc-meta {
+              text-align: right;
+              font-size: 9pt;
+              color: #334155;
+            }
+            .priority-badge {
+              display: inline-block;
+              font-weight: 700;
+              font-size: 8pt;
+              text-transform: uppercase;
+              letter-spacing: 0.04em;
+              padding: 3px 8px;
+              border-radius: 4px;
+              margin-top: 4px;
+              background: ${priority === "stat" ? "#fee2e2" : priority === "urgent" ? "#fef3c7" : "#ecfdf5"};
+              color: ${priority === "stat" ? "#991b1b" : priority === "urgent" ? "#92400e" : "#065f46"};
+              border: 1px solid ${priority === "stat" ? "#fca5a5" : priority === "urgent" ? "#fde68a" : "#a7f3d0"};
+            }
+            .letter-body {
+              white-space: pre-wrap;
+              font-family: inherit;
+              font-size: 10pt;
+              line-height: 1.46;
+              color: #1e293b;
+            }
+            .footer {
+              margin-top: 24px;
+              padding-top: 8px;
+              border-top: 1px solid #e2e8f0;
+              font-size: 7.5pt;
+              color: #94a3b8;
+              display: flex;
+              justify-content: space-between;
+              page-break-inside: avoid;
+            }
           </style>
         </head>
         <body>
-          <div class="header">
-            <h2>${facility}</h2>
-            <p>Clinical Referral Document · Generated on ${new Date().toLocaleDateString()}</p>
+          <div class="letterhead">
+            <div>
+              <h1 class="facility-name">${facility}</h1>
+              <p class="sub-title">Department of Diagnostic Imaging & Clinical Radiology</p>
+            </div>
+            <div class="doc-meta">
+              <div><strong>Date:</strong> ${formattedDate}</div>
+              <div><span class="priority-badge">Priority: ${priorityLabel}</span></div>
+            </div>
           </div>
-          <pre>${letter}</pre>
+          <div class="letter-body">${sanitizedContent}</div>
+          <div class="footer">
+            <span>MedVLM Decision Support System · Confidential Clinical Referral</span>
+            <span>Document 1 of 1</span>
+          </div>
         </body>
       </html>
     `);
     printWindow.document.close();
-    printWindow.print();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+    }, 250);
   };
 
   return (

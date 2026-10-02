@@ -610,73 +610,93 @@ export default function ClinicalReportView({
                   padding: "8px 10px",
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-                  <Layers size={13} color="var(--color-cyan)" />
+                <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 8 }}>
+                  <Layers size={14} color="var(--color-cyan)" />
                   <span
                     style={{
-                      fontSize: 11,
+                      fontSize: 11.5,
                       fontWeight: 700,
                       fontFamily: "var(--font-mono)",
                       color: "#ffffff",
                       textTransform: "uppercase",
+                      letterSpacing: "0.04em",
                     }}
                   >
                     6-Zone Lung Matrix
                   </span>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 4 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 6 }}>
                   {[
-                    { key: "upper_right", altKey: "right_upper", label: "RUL" },
-                    { key: "middle_right", altKey: "right_mid", label: "RML" },
-                    { key: "lower_right", altKey: "right_lower", label: "RLL" },
-                    { key: "upper_left", altKey: "left_upper", label: "LUL" },
-                    { key: "middle_left", altKey: "left_mid", label: "LML" },
-                    { key: "lower_left", altKey: "left_lower", label: "LLL" },
-                  ].map(({ key, altKey, label }) => {
+                    { key: "upper_right", altKey: "right_upper", label: "RUL", title: "Right Upper Lung" },
+                    { key: "upper_left", altKey: "left_upper", label: "LUL", title: "Left Upper Lung" },
+                    { key: "middle_right", altKey: "right_mid", label: "RML", title: "Right Middle Lung" },
+                    { key: "middle_left", altKey: "left_mid", label: "LML", title: "Left Middle Lung" },
+                    { key: "lower_right", altKey: "right_lower", label: "RLL", title: "Right Lower Lung" },
+                    { key: "lower_left", altKey: "left_lower", label: "LLL", title: "Left Lower Lung" },
+                  ].map(({ key, altKey, label, title }) => {
                     const rawVal = report.lung_zones?.[key] ?? report.lung_zones?.[altKey] ?? "Clear";
                     const val = typeof rawVal === "string" ? rawVal : (rawVal?.status || rawVal?.finding || "Clear");
                     const isAbnormal =
                       typeof val === "string" &&
                       !val.toLowerCase().includes("clear") &&
                       !val.toLowerCase().includes("normal");
+                    const displayVal = typeof val === "string" && val.trim().length > 0 ? val.toUpperCase() : (isAbnormal ? "AFFECTED" : "CLEAR");
                     return (
                       <div
                         key={key}
+                        title={`${title}: ${val}`}
                         style={{
-                          background: isAbnormal ? "rgba(239, 68, 68, 0.1)" : "rgba(15, 23, 42, 0.6)",
-                          border: `1px solid ${isAbnormal ? "rgba(239, 68, 68, 0.3)" : "rgba(148, 163, 184, 0.1)"}`,
-                          borderRadius: "5px",
-                          padding: "3px 5px",
-                          textAlign: "center",
+                          background: isAbnormal
+                            ? "linear-gradient(135deg, rgba(239, 68, 68, 0.16) 0%, rgba(239, 68, 68, 0.08) 100%)"
+                            : "linear-gradient(135deg, rgba(15, 23, 42, 0.75) 0%, rgba(15, 23, 42, 0.5) 100%)",
+                          border: `1px solid ${isAbnormal ? "rgba(239, 68, 68, 0.45)" : "rgba(148, 163, 184, 0.18)"}`,
+                          borderRadius: "8px",
+                          padding: "7px 11px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: 8,
+                          boxShadow: isAbnormal ? "0 2px 10px rgba(239, 68, 68, 0.12)" : "none",
                         }}
                       >
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                          <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>
-                            {label}
-                          </span>
+                        <span
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 800,
+                            fontFamily: "var(--font-mono)",
+                            color: isAbnormal ? "#fca5a5" : "#f1f5f9",
+                            letterSpacing: "0.05em",
+                          }}
+                        >
+                          {label}
+                        </span>
+
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                           <span
                             style={{
-                              width: 5,
-                              height: 5,
+                              width: 7,
+                              height: 7,
                               borderRadius: "50%",
                               background: isAbnormal ? "#ef4444" : "#10b981",
+                              boxShadow: isAbnormal
+                                ? "0 0 8px rgba(239, 68, 68, 0.9)"
+                                : "0 0 8px rgba(16, 185, 129, 0.8)",
+                              flexShrink: 0,
                             }}
                           />
-                        </div>
-                        <div
-                          style={{
-                            fontSize: 11,
-                            fontWeight: isAbnormal ? 700 : 600,
-                            color: isAbnormal ? "#fca5a5" : "var(--text-secondary)",
-                            marginTop: 1,
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          }}
-                          title={val}
-                        >
-                          {val}
+                          <span
+                            style={{
+                              fontSize: 12,
+                              fontWeight: 700,
+                              fontFamily: "var(--font-mono)",
+                              color: isAbnormal ? "#f87171" : "#34d399",
+                              letterSpacing: "0.04em",
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            {displayVal}
+                          </span>
                         </div>
                       </div>
                     );

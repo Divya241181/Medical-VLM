@@ -20,8 +20,14 @@ CANDIDATE_MODELS = [
 _PROMPT = """You are a radiology imaging specialist. Examine this chest X-ray and report ONLY
 raw anatomical observations — do not diagnose or name conditions yet.
 
-For each of the 6 lung zones (upper_left, upper_right, middle_left, middle_right,
-lower_left, lower_right), state whether it is "clear" or "affected".
+For each of the 6 anatomical lung zones, state whether it is "clear" or "affected".
+IMPORTANT: Use anatomical side, not image side. The patient's right is on the left side of the image.
+- upper_right (Anatomical RUL, image left)
+- middle_right (Anatomical RML, image left)
+- lower_right (Anatomical RLL, image left)
+- upper_left (Anatomical LUL, image right)
+- middle_left (Anatomical LML, image right)
+- lower_left (Anatomical LLL, image right)
 
 Also estimate confidence scores (0.0-1.0) for these visual patterns being present:
 opacity, cardiomegaly, effusion, pneumothorax, consolidation.

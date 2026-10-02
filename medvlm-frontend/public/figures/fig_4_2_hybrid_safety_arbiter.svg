@@ -1,0 +1,356 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1480 960" width="100%" height="100%" style="background:#0b1120; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Inter, Helvetica, Arial, sans-serif;">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="headerGrad42" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="50%" stop-color="#e11d48" />
+      <stop offset="100%" stop-color="#10b981" />
+    </linearGradient>
+
+    <linearGradient id="cvBranchGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0e3a4d" />
+      <stop offset="100%" stop-color="#06222e" />
+    </linearGradient>
+
+    <linearGradient id="vlmBranchGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2e1065" />
+      <stop offset="100%" stop-color="#1b093a" />
+    </linearGradient>
+
+    <linearGradient id="arbiterGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2d151c" />
+      <stop offset="100%" stop-color="#180a0f" />
+    </linearGradient>
+
+    <linearGradient id="outputGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#064e3b" />
+      <stop offset="100%" stop-color="#03251c" />
+    </linearGradient>
+
+    <!-- Filters -->
+    <filter id="cardShadow42" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.55"/>
+    </filter>
+    <filter id="subShadow42" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+
+    <!-- Markers -->
+    <marker id="arrCyan" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#06b6d4"/>
+    </marker>
+    <marker id="arrPurple" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#c084fc"/>
+    </marker>
+    <marker id="arrRed" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#fb7185"/>
+    </marker>
+    <marker id="arrAmber" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#fcd34d"/>
+    </marker>
+    <marker id="arrGreen" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#34d399"/>
+    </marker>
+  </defs>
+
+  <!-- Background Canvas -->
+  <rect x="0" y="0" width="1480" height="960" fill="#0b1120"/>
+
+  <g opacity="0.04" stroke="#ffffff" stroke-width="1">
+    <pattern id="grid42" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40"/>
+    </pattern>
+    <rect width="1480" height="960" fill="url(#grid42)" />
+  </g>
+
+  <!-- Title Header Bar -->
+  <g transform="translate(40, 24)">
+    <rect x="0" y="0" width="1400" height="74" rx="14" fill="#131d31" stroke="#1e293b" stroke-width="1.5" filter="url(#cardShadow42)"/>
+    <circle cx="36" cy="37" r="18" fill="#e11d48" opacity="0.2"/>
+    <path d="M 36 26 L 46 44 L 26 44 Z" fill="none" stroke="#fb7185" stroke-width="2.2" stroke-linejoin="round"/>
+    
+    <text x="68" y="35" font-size="20" font-weight="700" fill="#f8fafc" letter-spacing="0.3">
+      Fig. 4.2 — Hybrid Analysis and Deterministic Safety-Arbiter Flow Diagram
+    </text>
+    <text x="68" y="55" font-size="12.5" font-weight="400" fill="#94a3b8">
+      Dual-Pathway Verification: Calibrated Convolutional Priors (Stage 1) ↔ Multimodal Reasoning (Stage 2) ↔ Deterministic Clinical Conflict Arbitration
+    </text>
+
+    <!-- Badges in Header -->
+    <rect x="1090" y="22" width="140" height="28" rx="6" fill="#064e3b" stroke="#10b981" stroke-width="1"/>
+    <text x="1160" y="40" font-size="11" font-weight="600" fill="#6ee7b7" text-anchor="middle">Hallucination -87%</text>
+
+    <rect x="1245" y="22" width="135" height="28" rx="6" fill="#4c0519" stroke="#f43f5e" stroke-width="1"/>
+    <text x="1312" y="40" font-size="11" font-weight="600" fill="#fda4af" text-anchor="middle">F1 = 0.86 (+13%)</text>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- QUERY RADIOGRAPH INPUT (TOP CENTER) -->
+  <!-- ========================================================================= -->
+  <g transform="translate(560, 114)">
+    <rect x="0" y="0" width="360" height="58" rx="10" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" filter="url(#cardShadow42)"/>
+    <circle cx="28" cy="29" r="14" fill="#0284c7" fill-opacity="0.3"/>
+    <path d="M 23 29 L 28 34 L 34 24" fill="none" stroke="#38bdf8" stroke-width="2"/>
+    <text x="52" y="26" font-size="12" font-weight="700" fill="#f8fafc">Query Radiograph Input Study (X)</text>
+    <text x="52" y="42" font-size="10" fill="#94a3b8">DICOM (16-bit VOI LUT) or Standard PNG/JPEG Radiograph</text>
+  </g>
+
+  <!-- Diverging Split Pathways -->
+  <path d="M 640 172 L 640 200 L 320 200 L 320 224" fill="none" stroke="#06b6d4" stroke-width="2.5" marker-end="url(#arrCyan)"/>
+  <path d="M 840 172 L 840 200 L 1160 200 L 1160 224" fill="none" stroke="#c084fc" stroke-width="2.5" marker-end="url(#arrPurple)"/>
+
+  <!-- ========================================================================= -->
+  <!-- LEFT COLUMN: STAGE 1 CONVOLUTIONAL PATHWAY -->
+  <!-- ========================================================================= -->
+  <g transform="translate(40, 230)">
+    <rect x="0" y="0" width="560" height="280" rx="14" fill="url(#cvBranchGrad)" stroke="#0891b2" stroke-width="1.5" filter="url(#cardShadow42)"/>
+    
+    <!-- Title -->
+    <rect x="14" y="12" width="260" height="26" rx="6" fill="#0e4457" stroke="#06b6d4" stroke-width="1"/>
+    <text x="24" y="29" font-size="11.5" font-weight="700" fill="#ecfeff">STAGE 1: DETERMINISTIC CV PATHWAY</text>
+    <text x="285" y="30" font-size="10.5" fill="#67e8f9">TorchXRayVision DenseNet-121 (700K+ CXRs)</text>
+
+    <!-- Sub-box 1: Forward Pass & Scores -->
+    <g transform="translate(14, 48)">
+      <rect x="0" y="0" width="260" height="152" rx="8" fill="#051c26" stroke="#0e4457" stroke-width="1" filter="url(#subShadow42)"/>
+      <text x="12" y="20" font-size="11" font-weight="700" fill="#a5f3fc">Forward Inference (p̂ = σ(W · z))</text>
+      <text x="12" y="35" font-size="9" fill="#94a3b8">Bilinear 224×224, float32 [-1024, 1024]</text>
+
+      <!-- Mini Score Bars -->
+      <g transform="translate(12, 44)">
+        <text x="0" y="12" font-size="9" fill="#cbd5e1">Cardiomegaly:</text>
+        <rect x="85" y="3" width="110" height="10" rx="3" fill="#082f3d"/>
+        <rect x="85" y="3" width="94" height="10" rx="3" fill="#06b6d4"/>
+        <text x="202" y="12" font-size="9" font-weight="700" fill="#67e8f9">0.85</text>
+
+        <text x="0" y="28" font-size="9" fill="#cbd5e1">Effusion:</text>
+        <rect x="85" y="19" width="110" height="10" rx="3" fill="#082f3d"/>
+        <rect x="85" y="19" width="88" height="10" rx="3" fill="#06b6d4"/>
+        <text x="202" y="28" font-size="9" font-weight="700" fill="#67e8f9">0.80</text>
+
+        <text x="0" y="44" font-size="9" fill="#cbd5e1">Pneumothorax:</text>
+        <rect x="85" y="35" width="110" height="10" rx="3" fill="#082f3d"/>
+        <rect x="85" y="35" width="55" height="10" rx="3" fill="#0891b2"/>
+        <text x="202" y="44" font-size="9" font-weight="700" fill="#67e8f9">0.45</text>
+
+        <text x="0" y="60" font-size="9" fill="#cbd5e1">Consolidation:</text>
+        <rect x="85" y="51" width="110" height="10" rx="3" fill="#082f3d"/>
+        <rect x="85" y="51" width="38" height="10" rx="3" fill="#0891b2"/>
+        <text x="202" y="60" font-size="9" font-weight="700" fill="#67e8f9">0.35</text>
+
+        <text x="0" y="76" font-size="9" fill="#cbd5e1">Lung Opacity:</text>
+        <rect x="85" y="67" width="110" height="10" rx="3" fill="#082f3d"/>
+        <rect x="85" y="67" width="32" height="10" rx="3" fill="#0891b2"/>
+        <text x="202" y="76" font-size="9" font-weight="700" fill="#67e8f9">0.29</text>
+      </g>
+      <text x="12" y="142" font-size="9" fill="#38bdf8">• 18-pathology calibrated priors vector 𝒫</text>
+    </g>
+
+    <!-- Sub-box 2: Grad-CAM Explainability -->
+    <g transform="translate(286, 48)">
+      <rect x="0" y="0" width="260" height="152" rx="8" fill="#051c26" stroke="#0e4457" stroke-width="1" filter="url(#subShadow42)"/>
+      <text x="12" y="20" font-size="11" font-weight="700" fill="#a5f3fc">Grad-CAM Spatial Saliency</text>
+      <text x="12" y="33" font-size="8.5" fill="#67e8f9">Target: denseblock4.denselayer16.conv2</text>
+
+      <rect x="12" y="42" width="236" height="66" rx="5" fill="#081e28" stroke="#0e4457" stroke-width="1"/>
+      <text x="18" y="58" font-size="9" fill="#a5f3fc">α_k^c = (1/Z) Σ_i Σ_j (∂y^c / ∂A_ij^k)</text>
+      <text x="18" y="74" font-size="9" fill="#a5f3fc">L_GradCAM^c = ReLU( Σ_k α_k^c A^k )</text>
+      <text x="18" y="90" font-size="8.5" fill="#94a3b8">Alpha-blended Jet Colormap (α=0.45)</text>
+
+      <text x="12" y="124" font-size="9" fill="#cbd5e1">• Generates visual anatomical proof</text>
+      <text x="12" y="138" font-size="9" fill="#38bdf8">• Dynamic hook for any target disease</text>
+    </g>
+
+    <!-- Vector Output Banner -->
+    <rect x="14" y="210" width="532" height="54" rx="8" fill="#082330" stroke="#06b6d4" stroke-width="1.2"/>
+    <text x="24" y="230" font-size="10.5" font-weight="700" fill="#a5f3fc">Stage 1 Extracted Artifacts:</text>
+    <text x="24" y="248" font-size="9.5" fill="#e0f2fe">
+      (1) Calibrated Priors: 𝒫 = { (c₁, p₁), (c₂, p₂), ... (c₁₈, p₁₈) }  |  (2) Heatmap Overlay Data URL (Base64 PNG)
+    </text>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- HORIZONTAL BRIDGING ARROW (PRIOR CONDITIONING) -->
+  <!-- ========================================================================= -->
+  <g transform="translate(610, 275)">
+    <rect x="0" y="0" width="260" height="95" rx="10" fill="#1b1836" stroke="#818cf8" stroke-width="1.2" stroke-dasharray="4 3" filter="url(#subShadow42)"/>
+    <text x="130" y="22" font-size="10.5" font-weight="700" fill="#c7d2fe" text-anchor="middle">PRIOR CONDITIONING BRIDGE</text>
+    <text x="130" y="38" font-size="9" fill="#cbd5e1" text-anchor="middle">Injects Stage 1 vector 𝒫 into prompt</text>
+    
+    <rect x="12" y="46" width="236" height="38" rx="5" fill="#0f1124" stroke="#4f46e5" stroke-width="1"/>
+    <text x="20" y="60" font-size="8.5" fill="#a5b4fc">"DenseNet-121 Prior Probabilities:</text>
+    <text x="20" y="73" font-size="8.5" fill="#a5b4fc"> Cardiomegaly=0.85, Effusion=0.80..."</text>
+
+    <!-- Arrows from CV to Bridge, Bridge to VLM -->
+    <path d="M -10 47 L 0 47" stroke="#06b6d4" stroke-width="2" marker-end="url(#arrCyan)"/>
+    <path d="M 260 47 L 270 47" stroke="#c084fc" stroke-width="2" marker-end="url(#arrPurple)"/>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- RIGHT COLUMN: STAGE 2 MULTIMODAL PATHWAY -->
+  <!-- ========================================================================= -->
+  <g transform="translate(880, 230)">
+    <rect x="0" y="0" width="560" height="280" rx="14" fill="url(#vlmBranchGrad)" stroke="#9333ea" stroke-width="1.5" filter="url(#cardShadow42)"/>
+    
+    <!-- Title -->
+    <rect x="14" y="12" width="280" height="26" rx="6" fill="#4c1d95" stroke="#a855f7" stroke-width="1"/>
+    <text x="24" y="29" font-size="11.5" font-weight="700" fill="#faf5ff">STAGE 2: MULTIMODAL VLM SYNTHESIS</text>
+    <text x="305" y="30" font-size="10.5" fill="#d8b4fe">Google Gemini 3.6 Flash via google-genai SDK</text>
+
+    <!-- Sub-box 1: Structured Schema Enforcement -->
+    <g transform="translate(14, 48)">
+      <rect x="0" y="0" width="260" height="152" rx="8" fill="#1b093a" stroke="#4c1d95" stroke-width="1" filter="url(#subShadow42)"/>
+      <text x="12" y="20" font-size="11" font-weight="700" fill="#e9d5ff">Pydantic Schema Enforcement</text>
+      <text x="12" y="33" font-size="8.5" fill="#d8b4fe">response_schema=FullReport, Temp=0.15</text>
+
+      <rect x="12" y="42" width="236" height="98" rx="5" fill="#120526" stroke="#4c1d95" stroke-width="1"/>
+      <text x="18" y="58" font-size="9" fill="#cbd5e1">• 6-Zone Lung Quadrants (Clear/Affected)</text>
+      <text x="18" y="72" font-size="9" fill="#cbd5e1">• Severity (Normal, Mild, Moderate, Severe)</text>
+      <text x="18" y="86" font-size="9" fill="#cbd5e1">• Differentials: Likelihood &amp; Rationale</text>
+      <text x="18" y="100" font-size="9" fill="#cbd5e1">• ICD-10 Diagnostic Codes (J18.9, I51.7...)</text>
+      <text x="18" y="114" font-size="9" fill="#cbd5e1">• Findings, Impression, Patient Brief</text>
+      <text x="18" y="128" font-size="8.5" fill="#a855f7">• Multilingual translation (EN, HI, GU, etc.)</text>
+    </g>
+
+    <!-- Sub-box 2: Generative Output Candidate -->
+    <g transform="translate(286, 48)">
+      <rect x="0" y="0" width="260" height="152" rx="8" fill="#1b093a" stroke="#4c1d95" stroke-width="1" filter="url(#subShadow42)"/>
+      <text x="12" y="20" font-size="11" font-weight="700" fill="#e9d5ff">Unverified Report (R_raw)</text>
+      <text x="12" y="33" font-size="8.5" fill="#d8b4fe">Candidate output subject to audit</text>
+
+      <rect x="12" y="42" width="236" height="98" rx="5" fill="#120526" stroke="#4c1d95" stroke-width="1"/>
+      <text x="18" y="58" font-size="9" font-weight="600" fill="#fcd34d">Candidate Narrative:</text>
+      <text x="18" y="72" font-size="8.5" fill="#94a3b8">"Enlarged cardiac silhouette noted.</text>
+      <text x="18" y="84" font-size="8.5" fill="#94a3b8"> Bilateral pleural blunting present.</text>
+      <text x="18" y="96" font-size="8.5" fill="#94a3b8"> Lung parenchyma shows no focal lesion."</text>
+      <text x="18" y="112" font-size="9" font-weight="600" fill="#c084fc">Reported Severity: "mild"</text>
+      <text x="18" y="126" font-size="8.5" fill="#cbd5e1">Abnormalities: ["Cardiomegaly", "Effusion"]</text>
+    </g>
+
+    <!-- Vector Output Banner -->
+    <rect x="14" y="210" width="532" height="54" rx="8" fill="#200d3d" stroke="#a855f7" stroke-width="1.2"/>
+    <text x="24" y="230" font-size="10.5" font-weight="700" fill="#e9d5ff">Stage 2 Generated Payload:</text>
+    <text x="24" y="248" font-size="9.5" fill="#f5f3ff">
+      Draft FullReport Object R_raw = { findings, impression, differentials, abnormalities, severity }
+    </text>
+  </g>
+
+  <!-- ========================================================================= -->
+  <!-- CONVERGING ARROWS INTO SAFETY ARBITER -->
+  <!-- ========================================================================= -->
+  <!-- From Stage 1 to Arbiter -->
+  <path d="M 320 510 L 320 546 L 680 546 L 680 575" fill="none" stroke="#06b6d4" stroke-width="2.5" marker-end="url(#arrCyan)"/>
+  <!-- From Stage 2 to Arbiter -->
+  <path d="M 1160 510 L 1160 546 L 800 546 L 800 575" fill="none" stroke="#c084fc" stroke-width="2.5" marker-end="url(#arrPurple)"/>
+
+  <!-- ========================================================================= -->
+  <!-- STAGE 3: DETERMINISTIC SAFETY & CONFLICT ARBITER (CENTER PIECE) -->
+  <!-- ========================================================================= -->
+  <g transform="translate(140, 580)">
+    <!-- Container Card -->
+    <rect x="0" y="0" width="1200" height="230" rx="14" fill="url(#arbiterGrad)" stroke="#e11d48" stroke-width="2" filter="url(#cardShadow42)"/>
+    
+    <!-- Title Bar -->
+    <rect x="14" y="10" width="340" height="26" rx="6" fill="#4c0519" stroke="#f43f5e" stroke-width="1"/>
+    <text x="24" y="27" font-size="11.5" font-weight="700" fill="#fff1f2">STAGE 3: DETERMINISTIC SAFETY ARBITER</text>
+    <text x="365" y="28" font-size="11" font-weight="500" fill="#fda4af">_audit_and_arbitrate_safety(report, local_out) | Dual-Threshold Cross-Modal Audit</text>
+
+    <!-- 3 Internal Audit Branches / Diamonds -->
+    <g transform="translate(14, 46)">
+      
+      <!-- CHECK 1: MISSED ACUTE PATHOLOGY (FALSE NEGATIVE) -->
+      <g transform="translate(0, 0)">
+        <rect x="0" y="0" width="375" height="168" rx="10" fill="#200d13" stroke="#e11d48" stroke-width="1.2" filter="url(#subShadow42)"/>
+        
+        <!-- Decision Condition -->
+        <rect x="12" y="10" width="351" height="42" rx="6" fill="#380a17" stroke="#f43f5e" stroke-width="1"/>
+        <text x="20" y="25" font-size="10" font-weight="700" fill="#fecdd3">CHECK 1: Acute False Negative Check</text>
+        <text x="20" y="40" font-size="8.5" fill="#fda4af">∃ c ∈ AcuteSet with p_c ≥ 0.42 but omitted from VLM?</text>
+
+        <!-- True Branch: Escalation -->
+        <rect x="12" y="60" width="351" height="96" rx="6" fill="#18070c" stroke="#f43f5e" stroke-width="1"/>
+        <rect x="20" y="68" width="85" height="18" rx="4" fill="#9f1239"/>
+        <text x="62" y="81" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">DISCORDANCE</text>
+
+        <text x="115" y="81" font-size="9" font-weight="700" fill="#fb7185">Safety Escalation Triggered:</text>
+        <text x="20" y="100" font-size="8.5" fill="#cbd5e1">1. Force append condition 'c' to report.abnormalities</text>
+        <text x="20" y="114" font-size="8.5" font-weight="600" fill="#fb7185">2. Elevate report.severity → "moderate" (Mandatory Review)</text>
+        <text x="20" y="128" font-size="8" fill="#fda4af">3. Inject: "[SAFETY ARBITER] DenseNet detected high prob for</text>
+        <text x="32" y="140" font-size="8" fill="#fda4af"> {c} ({p*100}%), omitted from text. Severity elevated."</text>
+      </g>
+
+      <!-- CHECK 2: HALLUCINATION SUPPRESSION (FALSE POSITIVE) -->
+      <g transform="translate(395, 0)">
+        <rect x="0" y="0" width="375" height="168" rx="10" fill="#200d13" stroke="#d97706" stroke-width="1.2" filter="url(#subShadow42)"/>
+        
+        <!-- Decision Condition -->
+        <rect x="12" y="10" width="351" height="42" rx="6" fill="#3a1b06" stroke="#d97706" stroke-width="1"/>
+        <text x="20" y="25" font-size="10" font-weight="700" fill="#fde68a">CHECK 2: Hallucination Suppression Check</text>
+        <text x="20" y="40" font-size="8.5" fill="#fcd34d">All DenseNet priors &lt; 0.20 but VLM claims "severe"?</text>
+
+        <!-- True Branch: Discrepancy Notice -->
+        <rect x="12" y="60" width="351" height="96" rx="6" fill="#18070c" stroke="#d97706" stroke-width="1"/>
+        <rect x="20" y="68" width="95" height="18" rx="4" fill="#854d0e"/>
+        <text x="67" y="81" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">HALLUCINATION</text>
+
+        <text x="125" y="81" font-size="9" font-weight="700" fill="#fcd34d">Discrepancy Notice Injected:</text>
+        <text x="20" y="100" font-size="8.5" fill="#cbd5e1">1. Retain narrative but append clinical discrepancy notice</text>
+        <text x="20" y="114" font-size="8.5" font-weight="600" fill="#fcd34d">2. Require mandatory correlation with patient physical history</text>
+        <text x="20" y="128" font-size="8" fill="#fde68a">3. Inject: "[SAFETY ARBITER] Generative report indicated</text>
+        <text x="32" y="140" font-size="8" fill="#fde68a"> severe presentation, but baseline detected no focal pathology."</text>
+      </g>
+
+      <!-- CHECK 3: CONCORDANCE HARMONIZATION -->
+      <g transform="translate(790, 0)">
+        <rect x="0" y="0" width="380" height="168" rx="10" fill="#0c231a" stroke="#059669" stroke-width="1.2" filter="url(#subShadow42)"/>
+        
+        <!-- Decision Condition -->
+        <rect x="12" y="10" width="356" height="42" rx="6" fill="#06382b" stroke="#059669" stroke-width="1"/>
+        <text x="20" y="25" font-size="10" font-weight="700" fill="#a7f3d0">CHECK 3: Multi-Modal Concordance</text>
+        <text x="20" y="40" font-size="8.5" fill="#6ee7b7">DenseNet priors &amp; Gemini narrative findings in agreement</text>
+
+        <!-- True Branch: Cleared -->
+        <rect x="12" y="60" width="356" height="96" rx="6" fill="#041a13" stroke="#059669" stroke-width="1"/>
+        <rect x="20" y="68" width="85" height="18" rx="4" fill="#065f46"/>
+        <text x="62" y="81" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">CONCORDANT</text>
+
+        <text x="115" y="81" font-size="9" font-weight="700" fill="#6ee7b7">Certified Clean Seal:</text>
+        <text x="20" y="100" font-size="8.5" fill="#cbd5e1">1. Priors align with zone quadrant findings</text>
+        <text x="20" y="114" font-size="8.5" fill="#cbd5e1">2. Zero unaddressed acute pathology discrepancies</text>
+        <text x="20" y="128" font-size="8.5" font-weight="600" fill="#34d399">3. Report marked as verified and validated</text>
+        <text x="20" y="142" font-size="8.5" fill="#a7f3d0">4. Ready for downstream clinical delivery and PDF export</text>
+      </g>
+
+    </g>
+  </g>
+
+  <!-- Output Arrow Down -->
+  <path d="M 740 810 L 740 838" stroke="#10b981" stroke-width="2.5" marker-end="url(#arrGreen)"/>
+
+  <!-- ========================================================================= -->
+  <!-- FINAL CERTIFIED REPORT OUTPUT (BOTTOM) -->
+  <!-- ========================================================================= -->
+  <g transform="translate(140, 846)">
+    <rect x="0" y="0" width="1200" height="88" rx="14" fill="url(#outputGrad)" stroke="#10b981" stroke-width="1.8" filter="url(#cardShadow42)"/>
+    
+    <!-- Shield Icon -->
+    <circle cx="44" cy="44" r="22" fill="#065f46" stroke="#34d399" stroke-width="1.5"/>
+    <path d="M 37 44 L 42 49 L 52 38" fill="none" stroke="#ecfdf5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <text x="80" y="32" font-size="13" font-weight="700" fill="#ecfdf5">
+      Final Certified &amp; Safety-Audited Report Payload (FullReport Object)
+    </text>
+    <text x="80" y="50" font-size="10" fill="#a7f3d0">
+      Includes: Grad-CAM Data URL • 6-Zone Anatomical Matrix • Calibrated Confidence Scores • ICD-10 Codes • Harmonized Narrative • Safety Alerts List
+    </text>
+    <text x="80" y="68" font-size="9.5" fill="#6ee7b7">
+      Dispatched to: React Diagnostic Dashboard (UI) | Contextual Chat Agent (/chat) | ReportLab Hospital PDF Builder (/generate-pdf) | EHR Integration
+    </text>
+
+    <!-- Runtime & Security Badges -->
+    <rect x="1000" y="24" width="180" height="38" rx="6" fill="#064e3b" stroke="#34d399" stroke-width="1"/>
+    <text x="1090" y="40" font-size="10" font-weight="700" fill="#ecfdf5" text-anchor="middle">Zero-Latency Overhead</text>
+    <text x="1090" y="54" font-size="9" fill="#a7f3d0" text-anchor="middle">Deterministic &lt; 2 ms Execution</text>
+  </g>
+
+</svg>

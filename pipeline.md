@@ -24,6 +24,14 @@
 
 ## 1. System Architecture Overview
 
+> **Publication Figures**:
+> - **Fig. 3.1** — [MedVLM End-to-End Workflow Flowchart](docs/figures/fig_3_1_workflow_flowchart.svg)
+> - **Fig. 4.1** — [Overall System/Component Architecture Diagram](docs/figures/fig_4_1_system_architecture.svg)
+> - **Fig. 4.2** — [Hybrid Analysis and Safety-Arbiter Flow Diagram](docs/figures/fig_4_2_hybrid_safety_arbiter.svg)
+> - **Interactive Figures Showcase**: [docs/figures/index.html](docs/figures/index.html)
+> - **LaTeX TikZ Source**: [docs/figures/FIGURES_LATEX_TIKZ.tex](docs/figures/FIGURES_LATEX_TIKZ.tex)
+> - **Mermaid Source**: [docs/figures/DIAGRAMS.md](docs/figures/DIAGRAMS.md)
+
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                           FRONTEND (React 18 + Vite)                        │

@@ -56,7 +56,7 @@ jobs:
 
       - name: Install Dependencies
         working-directory: medvlm-frontend
-        run: npm ci
+        run: npm install
 
       - name: Build Production Bundle
         working-directory: medvlm-frontend
