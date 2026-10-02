@@ -44,7 +44,7 @@ from agents.chat_agent import run_chat_agent
 from agents.referral_agent import run_referral_agent
 from agents.grounding_agent import run_grounding_agent
 
-_executor = ThreadPoolExecutor(max_workers=4)
+_executor = ThreadPoolExecutor(max_workers=2)
 limiter = Limiter(key_func=get_remote_address)
 
 app = FastAPI(

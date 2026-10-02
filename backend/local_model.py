@@ -6,9 +6,17 @@ Includes thread-safe model execution and DICOM input normalization.
 """
 
 import io
+import os
+import gc
 import base64
 import threading
 from typing import Tuple, Dict, Any
+
+# Cap OpenMP/MKL thread pools to 1 BEFORE importing numerical libraries
+# This cuts PyTorch memory footprint significantly and prevents Render 512MB OOM kills
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
 
 import numpy as np
 import torch
@@ -16,6 +24,8 @@ import torch.nn.functional as F
 from PIL import Image
 import cv2
 import torchxrayvision as xrv
+
+torch.set_num_threads(1)
 
 from dicom_utils import is_dicom_file, process_dicom
 
@@ -33,6 +43,7 @@ def get_model():
             _model = xrv.models.DenseNet(weights="densenet121-res224-all")
             _model.to(_device)
             _model.eval()
+            gc.collect()
     return _model
 
 
@@ -70,8 +81,11 @@ def predict_xray(image_bytes: bytes, filename: str = "") -> Dict[str, Any]:
     tensor, orig_size, std_bytes, metadata = preprocess_image(image_bytes, filename)
 
     with _model_lock:
-        with torch.no_grad():
+        with torch.inference_mode():
             out = model(tensor)[0].detach().cpu().numpy()
+
+    del tensor
+    gc.collect()
 
     # Map outputs to all pathologies
     pathology_scores = {}
@@ -100,6 +114,7 @@ def predict_xray(image_bytes: bytes, filename: str = "") -> Dict[str, Any]:
     # Generate initial Grad-CAM for top abnormal condition or Cardiomegaly
     top_cond = detected_list[0]["condition"] if detected_list else "Cardiomegaly"
     heatmap_b64 = generate_gradcam(std_bytes, target_pathology=top_cond)
+    gc.collect()
 
     return {
         "confidence_scores": conf_scores,
@@ -140,7 +155,7 @@ def generate_gradcam(image_bytes: bytes, target_pathology: str = "Cardiomegaly",
             idx = int(torch.argmax(probs[0]).item())
 
         # Backward pass for gradients
-        model.zero_grad()
+        model.zero_grad(set_to_none=True)
         probs[0, idx].backward()
 
         # Compute weighted activation map
@@ -148,8 +163,10 @@ def generate_gradcam(image_bytes: bytes, target_pathology: str = "Cardiomegaly",
         weights = torch.mean(grad, dim=[2, 3], keepdim=True)
         cam = torch.relu(torch.sum(weights * features, dim=1)).squeeze().detach().cpu().numpy()
 
-        # Clean up model gradients
-        model.zero_grad()
+        # Clean up model gradients and activations immediately
+        model.zero_grad(set_to_none=True)
+        del features, pooled, logits, probs, grad, weights, tensor
+        gc.collect()
 
     # Normalize CAM to [0, 1]
     cam_min, cam_max = cam.min(), cam.max()
