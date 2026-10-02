@@ -76,9 +76,10 @@ async def startup_warmup():
         except Exception as seed_err:
             print(f"[startup] Notice: Study seeding note ({seed_err})")
 
+        # Non-blocking async background warmup so Render health-check responds immediately
         loop = asyncio.get_running_loop()
-        await loop.run_in_executor(_executor, get_model)
-        print("[startup] TorchXRayVision DenseNet-121 loaded and warmed up.")
+        loop.run_in_executor(_executor, get_model)
+        print("[startup] TorchXRayVision DenseNet-121 warmup initiated in background.")
     except Exception as e:
         print(f"[startup] Warmup notice: {e}")
 
