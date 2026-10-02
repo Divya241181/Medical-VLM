@@ -135,38 +135,30 @@ def generate_gradcam(image_bytes: bytes, target_pathology: str = "Cardiomegaly",
     """
     model = get_model()
     tensor, _, _, _ = preprocess_image(image_bytes, filename)
-    tensor.requires_grad = True
-
     with _model_lock:
-        # Forward pass up to feature extraction
-        features = model.features(tensor)
-        features.retain_grad()
+        with torch.inference_mode():
+            # Forward pass through feature extractor
+            features = model.features(tensor)
+            features_relu = F.relu(features, inplace=False)
+            pooled = F.adaptive_avg_pool2d(features_relu, (1, 1)).view(features.size(0), -1)
+            logits = model.classifier(pooled)
+            probs = torch.sigmoid(logits)
 
-        # Continue forward pass through pooling and classification
-        pooled = F.relu(features, inplace=False)
-        pooled = F.adaptive_avg_pool2d(pooled, (1, 1)).view(features.size(0), -1)
-        logits = model.classifier(pooled)
-        probs = torch.sigmoid(logits)
+            # Resolve target pathology index
+            if target_pathology in model.pathologies:
+                idx = model.pathologies.index(target_pathology)
+            else:
+                idx = int(torch.argmax(probs[0]).item())
 
-        # Resolve target pathology index
-        if target_pathology in model.pathologies:
-            idx = model.pathologies.index(target_pathology)
-        else:
-            idx = int(torch.argmax(probs[0]).item())
+            # For DenseNet (GAP + Linear), Grad-CAM simplifies to exact CAM:
+            # gradient of class score w.r.t features is identical to classifier weights.
+            # This eliminates autograd, backward(), and resident computation graphs,
+            # dropping peak RAM below Render's 512MB ceiling.
+            weights = model.classifier.weight[idx, :].view(1, -1, 1, 1)
+            cam = torch.relu(torch.sum(weights * features_relu, dim=1)).squeeze().detach().cpu().numpy()
 
-        # Backward pass for gradients
-        model.zero_grad(set_to_none=True)
-        probs[0, idx].backward()
-
-        # Compute weighted activation map
-        grad = features.grad
-        weights = torch.mean(grad, dim=[2, 3], keepdim=True)
-        cam = torch.relu(torch.sum(weights * features, dim=1)).squeeze().detach().cpu().numpy()
-
-        # Clean up model gradients and activations immediately
-        model.zero_grad(set_to_none=True)
-        del features, pooled, logits, probs, grad, weights, tensor
-        gc.collect()
+            del features, features_relu, pooled, logits, probs, weights, tensor
+            gc.collect()
 
     # Normalize CAM to [0, 1]
     cam_min, cam_max = cam.min(), cam.max()
