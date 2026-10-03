@@ -21,10 +21,11 @@ from slowapi.errors import RateLimitExceeded
 from sqlalchemy.orm import Session
 
 from PIL import Image
+from google.genai import types
 from app_config import ALLOWED_IMAGE_TYPES, MAX_FILE_BYTES, MIN_FILE_BYTES, MODEL_NAME
 from dicom_utils import is_dicom_file
 from database import init_db, get_db, StudyRecord, SessionLocal
-from pipeline import run_pipeline, run_pipeline_streaming, translate_report
+from pipeline import run_pipeline, run_pipeline_streaming, translate_report, _call_gemini_with_fallback, _clean_json_str
 from local_model import get_model, generate_gradcam
 from pdf_builder import build_pdf
 from schemas import (
@@ -120,6 +121,55 @@ def _validate_image(content_type: str, image_bytes: bytes, filename: str = ""):
             status_code=400,
             detail="Uploaded file is not a valid decodable image or DICOM study.",
         )
+
+    # ── Strict Chest / Lung Radiograph Anatomy Screening ──────────────────────
+    # MedVLM is exclusively calibrated for human chest radiographs (lungs, rib cage, mediastinum).
+    # Any everyday photo, non-lung image, or X-ray of other body parts (hand, skull, teeth, knee) must be rejected.
+    try:
+        # Use a lightweight resized JPEG copy for snappy anatomical classification (~250ms)
+        with Image.open(io.BytesIO(image_bytes)) as pil_img:
+            thumb = pil_img.convert("RGB")
+            thumb.thumbnail((512, 512))
+            buf = io.BytesIO()
+            thumb.save(buf, format="JPEG", quality=85)
+            check_bytes = buf.getvalue()
+
+        part = types.Part.from_bytes(data=check_bytes, mime_type="image/jpeg")
+        prompt = (
+            "You are a medical radiology input validation classifier for a chest X-ray diagnostic system.\n"
+            "Analyze this uploaded image carefully.\n"
+            "Task: Determine if this image is a human chest / lung X-ray (radiograph), whether normal or abnormal, "
+            "frontal (PA/AP) or lateral view, or a chest CT scout / lung radiograph.\n"
+            "REJECT ANY: non-medical images (photos of people, animals, everyday objects, documents, selfies, landscapes, graphics), "
+            "or medical images of non-chest body regions (e.g., hand, foot, dental, pelvis, skull, spine without lungs, knee).\n\n"
+            "Respond ONLY with valid JSON in this exact structure:\n"
+            "{\n"
+            '  "is_chest_xray": true or false,\n'
+            '  "detected_type": "short description of what the image actually depicts",\n'
+            '  "reason": "clinical explanation if rejected, or empty if accepted"\n'
+            "}"
+        )
+
+        res = _call_gemini_with_fallback(
+            contents=[prompt, part],
+            config=types.GenerateContentConfig(
+                temperature=0.0,
+                response_mime_type="application/json",
+            ),
+        )
+        data = json.loads(_clean_json_str(res.text))
+        if not data.get("is_chest_xray", True):
+            detected_desc = data.get("detected_type") or "non-chest image"
+            specific_reason = data.get("reason") or "Image does not display human lung fields or thoracic anatomy."
+            raise HTTPException(
+                status_code=422,
+                detail=f"Invalid Image: MedVLM only analyzes human chest/lung radiographs. Uploaded image detected as {detected_desc}. {specific_reason}",
+            )
+    except HTTPException:
+        raise
+    except Exception as screening_err:
+        print(f"[_validate_image] Note on anatomical pre-check ({screening_err}), continuing...")
+
 
 
 def _save_study_to_db(report: FullReport, filename: str, db: Session) -> StudyRecord:

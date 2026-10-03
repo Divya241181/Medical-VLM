@@ -209,7 +209,14 @@ export default function XRayAnalyzer({ onReportSaved, selectedReport, onClearSel
       });
 
       if (!response.ok) {
-        throw new Error(`Server returned HTTP ${response.status}: ${response.statusText}`);
+        let errDetail = "";
+        try {
+          const errData = await response.json();
+          errDetail = errData.detail || "";
+        } catch {
+          errDetail = `HTTP ${response.status}: ${response.statusText}`;
+        }
+        throw new Error(errDetail);
       }
 
       const reader = response.body.getReader();
@@ -230,7 +237,10 @@ export default function XRayAnalyzer({ onReportSaved, selectedReport, onClearSel
             if (!rawJson) continue;
             try {
               const event = JSON.parse(rawJson);
-              if (event.type === "stage") {
+              if (event.type === "error") {
+                setError(event.message || "Failed to process image.");
+                return;
+              } else if (event.type === "stage") {
                 if (event.stage === "model") setCurrentStage("DenseNet-121 inference & Grad-CAM...");
                 else if (event.stage === "vision") setCurrentStage("Vision Agent evaluating 6 lung zones...");
                 else if (event.stage === "reasoning") setCurrentStage("Reasoning Agent deducing differentials...");
@@ -252,6 +262,18 @@ export default function XRayAnalyzer({ onReportSaved, selectedReport, onClearSel
         }
       }
     } catch (err) {
+      const isValidationError = err.message && (
+        err.message.includes("Invalid Image") ||
+        err.message.includes("only analyzes human chest") ||
+        err.message.includes("422") ||
+        err.message.includes("Unsupported file type")
+      );
+
+      if (isValidationError) {
+        setError(err.message);
+        return;
+      }
+
       console.warn("SSE stream failed, falling back to sync analyze:", err);
       try {
         const formData = new FormData();
@@ -262,7 +284,16 @@ export default function XRayAnalyzer({ onReportSaved, selectedReport, onClearSel
         if (patientGender) formData.append("patient_gender", patientGender);
 
         const syncRes = await fetch(`${API}/analyze`, { method: "POST", body: formData });
-        if (!syncRes.ok) throw new Error(`HTTP ${syncRes.status}: ${syncRes.statusText}`);
+        if (!syncRes.ok) {
+          let detail = "";
+          try {
+            const d = await syncRes.json();
+            detail = d.detail || "";
+          } catch {
+            detail = `HTTP ${syncRes.status}: ${syncRes.statusText}`;
+          }
+          throw new Error(detail);
+        }
         const rep = await syncRes.json();
         setReport(rep);
         if (rep.heatmap_data_url) setHeatmapUrl(rep.heatmap_data_url);
