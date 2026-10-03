@@ -1,0 +1,359 @@
+/* MedVLM Studio — Clinician Authentication Modal Styles */
+
+.mvlm-auth-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 7, 17, 0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  animation: mvlmFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mvlm-auth-card {
+  width: 100%;
+  max-width: 520px;
+  background: #0d1527;
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  border-radius: var(--radius-lg, 16px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65), 0 0 35px rgba(6, 182, 212, 0.12);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  animation: mvlmSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mvlm-auth-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #06b6d4, #0284c7, #10b981);
+}
+
+.mvlm-auth-header {
+  padding: 24px 28px 18px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  background: rgba(14, 22, 38, 0.6);
+}
+
+.mvlm-auth-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mvlm-auth-icon-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(6, 182, 212, 0.12);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-cyan, #06b6d4);
+  box-shadow: 0 0 16px rgba(6, 182, 212, 0.2);
+}
+
+.mvlm-auth-title {
+  font-size: 19px;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.mvlm-auth-subtitle {
+  font-size: 12px;
+  color: var(--text-dim, #94a3b8);
+  margin-top: 3px;
+}
+
+.mvlm-auth-close-btn {
+  background: transparent;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mvlm-auth-close-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+}
+
+/* Tabs */
+.mvlm-auth-tabs {
+  display: flex;
+  padding: 10px 28px 0;
+  gap: 8px;
+  background: rgba(14, 22, 38, 0.4);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.mvlm-auth-tab {
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #94a3b8;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.mvlm-auth-tab:hover {
+  color: #f1f5f9;
+}
+
+.mvlm-auth-tab.active {
+  color: #06b6d4;
+  border-bottom-color: #06b6d4;
+}
+
+.mvlm-auth-body {
+  padding: 22px 28px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* Quick Personas */
+.mvlm-persona-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mvlm-persona-card {
+  padding: 14px 16px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.mvlm-persona-card:hover {
+  background: rgba(6, 182, 212, 0.08);
+  border-color: rgba(6, 182, 212, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(6, 182, 212, 0.1);
+}
+
+.mvlm-persona-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mvlm-persona-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 14px;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+}
+
+.mvlm-persona-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.mvlm-persona-meta {
+  font-size: 11.5px;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.mvlm-persona-inst {
+  font-size: 11px;
+  color: #06b6d4;
+  margin-top: 2px;
+}
+
+.mvlm-persona-badge {
+  font-size: 10.5px;
+  font-family: var(--font-mono, monospace);
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(6, 182, 212, 0.12);
+  color: #06b6d4;
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  white-space: nowrap;
+}
+
+/* Forms */
+.mvlm-auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mvlm-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mvlm-form-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mvlm-form-input,
+.mvlm-form-select {
+  width: 100%;
+  padding: 10px 14px;
+  background: #090e1a;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 8px;
+  color: #f8fafc;
+  font-size: 13.5px;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.mvlm-form-input:focus,
+.mvlm-form-select:focus {
+  border-color: #06b6d4;
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.18);
+}
+
+.mvlm-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.mvlm-auth-error {
+  padding: 10px 14px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 8px;
+  font-size: 12.5px;
+  color: #fca5a5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mvlm-auth-submit-btn {
+  width: 100%;
+  padding: 12px 18px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #06b6d4 0%, #0284c7 100%);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.18s ease;
+  box-shadow: 0 4px 18px rgba(6, 182, 212, 0.3);
+  margin-top: 6px;
+}
+
+.mvlm-auth-submit-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(6, 182, 212, 0.45);
+}
+
+.mvlm-auth-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.mvlm-demo-quick-banner {
+  margin-top: 18px;
+  padding: 12px 14px;
+  background: rgba(6, 182, 212, 0.06);
+  border: 1px dashed rgba(6, 182, 212, 0.3);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.mvlm-demo-quick-banner p {
+  font-size: 12px;
+  color: #cbd5e1;
+  margin: 0;
+}
+
+.mvlm-demo-quick-btn {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #06b6d4;
+  background: rgba(6, 182, 212, 0.12);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.mvlm-demo-quick-btn:hover {
+  background: rgba(6, 182, 212, 0.25);
+}
+
+@keyframes mvlmFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes mvlmSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

@@ -114,8 +114,42 @@ class StudyRecord(Base):
         }
 
 
+class UserRecord(Base):
+    __tablename__ = "users"
+
+    id = Column(String(64), primary_key=True, index=True)
+    email = Column(String(128), unique=True, index=True, nullable=False)
+    hashed_password = Column(String(128), nullable=False)
+    name = Column(String(128), nullable=False)
+    role = Column(String(64), default="Attending Radiologist")
+    specialty = Column(String(64), default="Diagnostic Radiology")
+    institution = Column(String(128), default="Stanford Medical Imaging Network")
+    license = Column(String(64), nullable=True)
+    npi = Column(String(32), nullable=True)
+    department = Column(String(128), nullable=True)
+    avatar_initials = Column(String(8), default="MD")
+    color = Column(String(32), default="#06b6d4")
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "id": self.id,
+            "email": self.email,
+            "name": self.name,
+            "role": self.role,
+            "specialty": self.specialty,
+            "institution": self.institution,
+            "license": self.license,
+            "npi": self.npi,
+            "department": self.department,
+            "avatarInitials": self.avatar_initials,
+            "color": self.color,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+
 def init_db():
-    """Create database tables if they do not exist."""
+    """Create database tables if they do not exist and seed default demo clinicians."""
     Base.metadata.create_all(bind=engine)
     # Ensure backward-compatible schema migration for new columns
     with engine.connect() as conn:
@@ -138,3 +172,4 @@ def get_db():
         yield db
     finally:
         db.close()
+

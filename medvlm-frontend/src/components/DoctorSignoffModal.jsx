@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { UserCheck, ShieldCheck, X, FileSignature, AlertCircle, Award } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 export default function DoctorSignoffModal({
   isOpen,
@@ -7,13 +8,22 @@ export default function DoctorSignoffModal({
   report,
   onSignSuccess,
 }) {
-  const [doctorName, setDoctorName] = useState("Dr. Marcus Vance, MD");
-  const [licenseNumber, setLicenseNumber] = useState("RAD-CA-409182");
+  const { user } = useAuth();
+  const [doctorName, setDoctorName] = useState(user?.name || "Dr. Marcus Vance, MD");
+  const [licenseNumber, setLicenseNumber] = useState(user?.license || "RAD-CA-409182");
   const [notes, setNotes] = useState(
     "Findings reviewed and clinically verified. Concur with AI differential and recommendations."
   );
   const [signing, setSigning] = useState(false);
   const [error, setError] = useState(null);
+
+  // Sync with logged in user when modal opens or user switches
+  useEffect(() => {
+    if (user) {
+      setDoctorName(user.name);
+      if (user.license) setLicenseNumber(user.license);
+    }
+  }, [user, isOpen]);
 
   if (!isOpen) return null;
 

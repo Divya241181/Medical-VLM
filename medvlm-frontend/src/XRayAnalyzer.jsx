@@ -300,7 +300,11 @@ export default function XRayAnalyzer({ onReportSaved, selectedReport, onClearSel
         if (rep.image_preview_url) setPreview(rep.image_preview_url);
         if (onReportSaved) onReportSaved(rep, imageFile);
       } catch (syncErr) {
-        setError(syncErr.message || "Failed to analyze radiograph.");
+        if (syncErr.message?.includes("Failed to fetch") || syncErr.name === "TypeError") {
+          setError(`Cannot connect to MedVLM backend server at ${API}. Please ensure the backend server is running via run.bat or 'python -m uvicorn main:app --port 8000' in the backend directory.`);
+        } else {
+          setError(syncErr.message || "Failed to analyze radiograph.");
+        }
       }
     } finally {
       setLoading(false);

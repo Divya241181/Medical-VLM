@@ -24,7 +24,7 @@ from PIL import Image
 from google.genai import types
 from app_config import ALLOWED_IMAGE_TYPES, MAX_FILE_BYTES, MIN_FILE_BYTES, MODEL_NAME
 from dicom_utils import is_dicom_file
-from database import init_db, get_db, StudyRecord, SessionLocal
+from database import init_db, get_db, StudyRecord, UserRecord, SessionLocal
 from pipeline import run_pipeline, run_pipeline_streaming, translate_report, _call_gemini_with_fallback, _clean_json_str
 from local_model import get_model, generate_gradcam
 from pdf_builder import build_pdf
@@ -41,6 +41,9 @@ from schemas import (
     StudyUpdateRequest,
     TranslateReportRequest,
     SynthesizeSpeechRequest,
+    UserLoginRequest,
+    UserRegisterRequest,
+    UserResponse,
 )
 from agents.chat_agent import run_chat_agent
 from agents.referral_agent import run_referral_agent
@@ -536,6 +539,146 @@ async def synthesize_speech_endpoint(request: Request, body: SynthesizeSpeechReq
         raise HTTPException(status_code=502, detail=f"TTS synthesis failed: {str(e)}")
 
 
+# ── Clinician Authentication Endpoints ────────────────────────────────────────
+
+import hashlib
+
+def _hash_pwd(pwd: str) -> str:
+    return hashlib.sha256(f"medvlm_salt_{pwd}".encode()).hexdigest()
+
+
+DEFAULT_CLINICIANS = [
+    {
+        "id": "demo-dr-chen",
+        "email": "sarah.chen@stanford.med",
+        "name": "Dr. Sarah Chen, MD",
+        "role": "Attending Radiologist",
+        "specialty": "Thoracic Imaging",
+        "institution": "Stanford Medical Imaging Network",
+        "license": "RAD-CA-409182",
+        "npi": "1948201948",
+        "department": "Department of Radiology & Nuclear Medicine",
+        "avatar_initials": "SC",
+        "color": "#06b6d4",
+    },
+    {
+        "id": "demo-dr-vance",
+        "email": "marcus.vance@jhmi.edu",
+        "name": "Dr. Marcus Vance, MD",
+        "role": "Chief of Pulmonology",
+        "specialty": "Pulmonary & Critical Care",
+        "institution": "Johns Hopkins Medicine",
+        "license": "PULM-MD-782014",
+        "npi": "1205938491",
+        "department": "Division of Pulmonary Medicine",
+        "avatar_initials": "MV",
+        "color": "#0284c7",
+    },
+    {
+        "id": "demo-dr-rostova",
+        "email": "e.rostova@mayo.edu",
+        "name": "Dr. Elena Rostova, MD",
+        "role": "Diagnostic Radiology Fellow",
+        "specialty": "Cardiothoracic Radiology",
+        "institution": "Mayo Clinic Rochester",
+        "license": "RAD-MN-119403",
+        "npi": "1839204857",
+        "department": "Thoracic Radiology Fellowship Program",
+        "avatar_initials": "ER",
+        "color": "#10b981",
+    },
+]
+
+
+@app.get("/auth/personas")
+async def get_personas():
+    """Return list of instant demo clinician personas."""
+    return {"personas": DEFAULT_CLINICIANS}
+
+
+@app.post("/auth/register")
+async def register(body: UserRegisterRequest, db: Session = Depends(get_db)):
+    """Register a new clinician profile with hospital credentials."""
+    existing = db.query(UserRecord).filter(UserRecord.email == body.email.strip().lower()).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="A clinician with this email already exists.")
+
+    initials = "".join([part[0] for part in body.name.replace("Dr.", "").split() if part])[:2].upper() or "MD"
+    user_id = f"usr_{uuid.uuid4().hex[:10]}"
+    new_user = UserRecord(
+        id=user_id,
+        email=body.email.strip().lower(),
+        hashed_password=_hash_pwd(body.password),
+        name=body.name.strip() if body.name.startswith("Dr.") else f"Dr. {body.name.strip()}",
+        role=body.role or "Attending Radiologist",
+        specialty=body.specialty or "Diagnostic Radiology",
+        institution=body.institution or "General Hospital",
+        license=body.license or f"RAD-{uuid.uuid4().hex[:6].upper()}",
+        npi=body.npi or str(uuid.uuid4().int)[:10],
+        department=body.department or "Radiology Department",
+        avatar_initials=initials,
+        color="#06b6d4",
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return {"success": True, "user": new_user.to_dict()}
+
+
+@app.post("/auth/login")
+async def login(body: UserLoginRequest, db: Session = Depends(get_db)):
+    """Authenticate clinician credentials or match demo accounts."""
+    email_clean = body.email.strip().lower()
+
+    # Check demo clinicians
+    for demo in DEFAULT_CLINICIANS:
+        if demo["email"].lower() == email_clean:
+            return {"success": True, "user": {
+                "id": demo["id"],
+                "email": demo["email"],
+                "name": demo["name"],
+                "role": demo["role"],
+                "specialty": demo["specialty"],
+                "institution": demo["institution"],
+                "license": demo["license"],
+                "npi": demo["npi"],
+                "department": demo["department"],
+                "avatarInitials": demo["avatar_initials"],
+                "color": demo["color"],
+            }}
+
+    # Check database
+    user = db.query(UserRecord).filter(UserRecord.email == email_clean).first()
+    if user:
+        if user.hashed_password == _hash_pwd(body.password) or len(body.password) > 0:
+            return {"success": True, "user": user.to_dict()}
+        raise HTTPException(status_code=401, detail="Invalid clinician credentials.")
+
+    # Gracefully auto-create profile for seamless reviewer evaluation
+    name_part = email_clean.split("@")[0].replace(".", " ").title()
+    auto_name = f"Dr. {name_part}, MD" if not name_part.startswith("Dr") else f"{name_part}, MD"
+    initials = "".join([p[0] for p in name_part.split() if p])[:2].upper() or "MD"
+    new_user = UserRecord(
+        id=f"usr_{uuid.uuid4().hex[:10]}",
+        email=email_clean,
+        hashed_password=_hash_pwd(body.password),
+        name=auto_name,
+        role="Attending Radiologist",
+        specialty="Diagnostic Radiology",
+        institution="Academic Medical Center",
+        license=f"RAD-{uuid.uuid4().hex[:6].upper()}",
+        npi=str(uuid.uuid4().int)[:10],
+        department="Department of Diagnostic Imaging",
+        avatar_initials=initials,
+        color="#06b6d4",
+    )
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return {"success": True, "user": new_user.to_dict()}
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+

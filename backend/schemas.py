@@ -200,3 +200,38 @@ class SynthesizeSpeechRequest(BaseModel):
     language:        str = "English"
 
 
+# ── Clinician Authentication Schemas ──────────────────────────────────────────
+
+class UserLoginRequest(BaseModel):
+    email:    str
+    password: str
+
+
+class UserRegisterRequest(BaseModel):
+    name:         str
+    email:        str
+    password:     str
+    role:         Optional[str] = "Attending Radiologist"
+    specialty:    Optional[str] = "Diagnostic Radiology"
+    institution:  Optional[str] = "Memorial Health System"
+    license:      Optional[str] = None
+    npi:          Optional[str] = None
+    department:   Optional[str] = None
+
+
+class UserResponse(BaseModel):
+    id:             str
+    email:          str
+    name:           str
+    role:           str
+    specialty:      str
+    institution:    str
+    license:        Optional[str] = None
+    npi:            Optional[str] = None
+    department:     Optional[str] = None
+    avatarInitials: Optional[str] = "MD"
+    color:          Optional[str] = "#06b6d4"
+    created_at:     Optional[str] = None
+
+
+
