@@ -4,6 +4,7 @@ import useReportHistory from "./hooks/useReportHistory";
 import HistoryPanel from "./components/HistoryPanel";
 import DisclaimerModal from "./components/DisclaimerModal";
 import ResearchMetricsModal from "./components/ResearchMetricsModal";
+import medvlmLogo from "./assets/medvlm-logo.png";
 import {
   Activity,
   Clock,
@@ -52,17 +53,21 @@ export default function App() {
                   width: 38,
                   height: 38,
                   borderRadius: "10px",
-                  background: "linear-gradient(135deg, #06b6d4, #0284c7)",
+                  background: "#090d16",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   boxShadow: "0 0 16px rgba(6, 182, 212, 0.4)",
-                  border: "1px solid rgba(255, 255, 255, 0.18)",
+                  border: "1px solid rgba(6, 182, 212, 0.3)",
                   position: "relative",
                   overflow: "hidden",
                 }}
               >
-                <Activity size={22} color="#ffffff" strokeWidth={2.4} />
+                <img
+                  src={medvlmLogo}
+                  alt="MedVLM Logo"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
               </div>
 
               <div>

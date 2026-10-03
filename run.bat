@@ -8,25 +8,30 @@ echo  ==========================================
 echo.
 
 :: ── Check for .env key ──────────────────────────────────────
-findstr /C:"your_key_here" "%~dp0backend\.env" >nul 2>&1
-if %errorlevel%==0 (
-    echo  [!] WARNING: GEMINI_API_KEY is still set to placeholder.
-    echo      Edit backend\.env and add your real API key.
-    echo      Get one at: https://aistudio.google.com/app/apikey
+if exist "%~dp0backend\.env" (
+    findstr /C:"your_key_here" "%~dp0backend\.env" >nul 2>&1
+    if %errorlevel%==0 (
+        echo  [!] WARNING: GEMINI_API_KEY is still set to placeholder.
+        echo      Edit backend\.env and add your real API key.
+        echo      Get one at: https://aistudio.google.com/app/apikey
+        echo.
+        pause
+    )
+) else (
+    echo  [!] backend\.env not found. Please create one from .env.example.
     echo.
-    pause
 )
 
 :: ── Install backend dependencies ────────────────────────────
-echo  [1/3] Installing backend dependencies...
-pip install -q -r "%~dp0backend\requirements.txt"
+echo  [1/3] Checking backend dependencies...
+python -m pip install -q -r "%~dp0backend\requirements.txt"
 echo        Done.
 echo.
 
 :: ── Install frontend dependencies ───────────────────────────
-echo  [2/3] Installing frontend dependencies...
+echo  [2/3] Checking frontend dependencies...
 cd /d "%~dp0medvlm-frontend"
-call npm install --silent
+call npm install
 echo        Done.
 echo.
 

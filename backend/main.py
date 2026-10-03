@@ -39,6 +39,7 @@ from schemas import (
     StudySignRequest,
     StudyUpdateRequest,
     TranslateReportRequest,
+    SynthesizeSpeechRequest,
 )
 from agents.chat_agent import run_chat_agent
 from agents.referral_agent import run_referral_agent
@@ -423,6 +424,66 @@ async def translate_report_endpoint(request: Request, body: TranslateReportReque
         _executor, translate_report, body.report, body.target_language
     )
     return JSONResponse(content=translated.model_dump(mode="json"))
+
+
+# ── High-Fidelity Multilingual Speech Synthesis (Gu, Hi, Mr, En) ───────────
+import urllib.request
+import urllib.parse
+import re
+
+def _clean_speech_text(raw_text: str) -> str:
+    cleaned = re.sub(r"[*_#`~\[\]]", " ", raw_text)
+    cleaned = re.sub(r"(\b\w+)/(\w+\b)", r"\1 or \2", cleaned)
+    cleaned = cleaned.replace("/", " ").replace("\\", " ")
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    return cleaned
+
+@app.post("/synthesize-speech")
+@limiter.limit("60/minute")
+async def synthesize_speech_endpoint(request: Request, body: SynthesizeSpeechRequest):
+    """
+    Synthesizes natural, human-grade voice for all languages including Gujarati and Marathi.
+    Streams MP3 audio directly to the frontend.
+    """
+    text = _clean_speech_text(body.text)
+    if not text:
+        raise HTTPException(status_code=400, detail="Empty text provided")
+
+    lang_lower = (body.language or "english").lower().strip()
+    # Script detection fallback
+    if any("\u0A80" <= c <= "\u0AFF" for c in text) or "guj" in lang_lower:
+        tl = "gu"
+    elif any("\u0900" <= c <= "\u097F" for c in text):
+        tl = "mr" if "mar" in lang_lower else "hi"
+    elif "mar" in lang_lower:
+        tl = "mr"
+    elif "hin" in lang_lower:
+        tl = "hi"
+    else:
+        tl = "en"
+
+    # Truncate to first 300 characters for snappy response (briefings are 1-2 sentences)
+    text_segment = text[:300]
+    encoded = urllib.parse.quote(text_segment)
+    tts_url = f"https://translate.google.com/translate_tts?ie=UTF-8&q={encoded}&tl={tl}&client=tw-ob"
+
+    def fetch_audio():
+        req = urllib.request.Request(
+            tts_url,
+            headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            },
+        )
+        with urllib.request.urlopen(req, timeout=6) as resp:
+            return resp.read()
+
+    loop = asyncio.get_running_loop()
+    try:
+        audio_data = await loop.run_in_executor(_executor, fetch_audio)
+        return StreamingResponse(io.BytesIO(audio_data), media_type="audio/mpeg")
+    except Exception as e:
+        print(f"[/synthesize-speech] Error fetching remote TTS: {e}")
+        raise HTTPException(status_code=502, detail=f"TTS synthesis failed: {str(e)}")
 
 
 if __name__ == "__main__":

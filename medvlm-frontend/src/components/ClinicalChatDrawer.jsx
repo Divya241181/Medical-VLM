@@ -86,21 +86,133 @@ export default function ClinicalChatDrawer({
     }
   };
 
-  const handleSpeak = (text, idx) => {
-    if (!window.speechSynthesis) return;
-    if (speakingIdx === idx) {
+  // Robust browser speech synthesis reference holder to prevent garbage collection
+  const currentUtteranceRef = useRef(null);
+
+  const cleanTextForSpeech = (rawText) => {
+    if (!rawText) return "";
+    return rawText
+      .replace(/[*_#`~[\]]/g, " ")
+      .replace(/(\b\w+)\/(\w+\b)/g, "$1 or $2")
+      .replace(/\//g, " ")
+      .replace(/\\/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  };
+
+  const getLanguageTag = (langName, text = "") => {
+    if (text) {
+      if (/[\u0A80-\u0AFF]/.test(text)) return "gu-IN";
+      if (/[\u0900-\u097F]/.test(text)) {
+        const clean = (langName || "").toLowerCase();
+        if (clean.includes("mar")) return "mr-IN";
+        return "hi-IN";
+      }
+    }
+    const clean = (langName || "").toLowerCase();
+    if (clean.includes("guj")) return "gu-IN";
+    if (clean.includes("hin")) return "hi-IN";
+    if (clean.includes("mar")) return "mr-IN";
+    return "en-US";
+  };
+
+  // Audio element reference for streamed natural voice
+  const activeAudioRef = useRef(null);
+
+  const handleSpeak = async (text, idx) => {
+    // If currently playing streamed audio for this message, stop it
+    if (activeAudioRef.current) {
+      activeAudioRef.current.pause();
+      activeAudioRef.current = null;
+      setSpeakingIdx(null);
+      return;
+    }
+
+    if (typeof window !== "undefined" && window.speechSynthesis && speakingIdx === idx) {
       window.speechSynthesis.cancel();
       setSpeakingIdx(null);
       return;
     }
-    window.speechSynthesis.cancel();
-    const cleanText = text.replace(/[*_#`]/g, "");
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.lang = LANG_VOICES[language] || "en-US";
-    utterance.onend = () => setSpeakingIdx(null);
-    utterance.onerror = () => setSpeakingIdx(null);
+
+    const cleanText = cleanTextForSpeech(text);
+    if (!cleanText) return;
+
     setSpeakingIdx(idx);
-    window.speechSynthesis.speak(utterance);
+
+    // Try high-fidelity server TTS first (human voice for Gujarati, Marathi, Hindi, English)
+    try {
+      const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
+      const resp = await fetch(`${API}/synthesize-speech`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: cleanText,
+          language: language || "English",
+        }),
+      });
+
+      if (resp.ok) {
+        const audioBlob = await resp.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
+        activeAudioRef.current = audio;
+
+        audio.onended = () => {
+          setSpeakingIdx(null);
+          activeAudioRef.current = null;
+          URL.revokeObjectURL(audioUrl);
+        };
+        audio.onerror = () => {
+          setSpeakingIdx(null);
+          activeAudioRef.current = null;
+          URL.revokeObjectURL(audioUrl);
+        };
+
+        await audio.play();
+        return;
+      }
+    } catch (err) {
+      console.warn("[Server TTS error in chat, falling back to browser synthesis]", err);
+    }
+
+    // Fallback: Browser Web Speech API
+    if (typeof window === "undefined" || !window.speechSynthesis) {
+      setSpeakingIdx(null);
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+    }
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    currentUtteranceRef.current = utterance;
+
+    const langTag = getLanguageTag(language, cleanText);
+    utterance.lang = langTag;
+
+    utterance.rate = 0.95;
+    utterance.pitch = 1.0;
+
+    utterance.onstart = () => setSpeakingIdx(idx);
+    utterance.onend = () => {
+      setSpeakingIdx(null);
+      currentUtteranceRef.current = null;
+    };
+    utterance.onerror = () => {
+      setSpeakingIdx(null);
+      currentUtteranceRef.current = null;
+    };
+
+    setTimeout(() => {
+      try {
+        if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+        window.speechSynthesis.speak(utterance);
+      } catch {
+        setSpeakingIdx(null);
+      }
+    }, 50);
   };
 
   return (

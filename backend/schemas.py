@@ -194,3 +194,9 @@ class TranslateReportRequest(BaseModel):
     report:          FullReport
     target_language: str = "Hindi"
 
+
+class SynthesizeSpeechRequest(BaseModel):
+    text:            str
+    language:        str = "English"
+
+

@@ -123,29 +123,135 @@ export default function ClinicalReportView({
   const SevIcon = sev.icon;
   const isSigned = report.status === "signed" || Boolean(report.signed_by);
 
-  const handleSpeakBrief = () => {
-    if (!window.speechSynthesis) return;
-    if (speaking) {
+  // Robust browser speech synthesis reference holder to prevent garbage collection
+  const currentUtteranceRef = useRef(null);
+
+  const cleanTextForSpeech = (rawText) => {
+    if (!rawText) return "";
+    return rawText
+      .replace(/[*_#`~[\]]/g, " ")      // strip markdown formatting
+      .replace(/(\b\w+)\/(\w+\b)/g, "$1 or $2") // replace word/word with "or" so it does not say "slash"
+      .replace(/\//g, " ")             // replace remaining standalone slashes with space
+      .replace(/\\/g, " ")             // replace backslashes
+      .replace(/\s+/g, " ")            // normalize extra whitespace
+      .trim();
+  };
+
+  // Language-to-BCP-47 mapping with fallback variants
+  const getLanguageTag = (langName, text = "") => {
+    if (text) {
+      if (/[\u0A80-\u0AFF]/.test(text)) return "gu-IN";
+      if (/[\u0900-\u097F]/.test(text)) {
+        const clean = (langName || "").toLowerCase();
+        if (clean.includes("mar")) return "mr-IN";
+        return "hi-IN";
+      }
+    }
+    const clean = (langName || "").toLowerCase();
+    if (clean.includes("guj")) return "gu-IN";
+    if (clean.includes("hin")) return "hi-IN";
+    if (clean.includes("mar")) return "mr-IN";
+    return "en-US";
+  };
+
+  // Audio element reference for streamed natural voice
+  const activeAudioRef = useRef(null);
+
+  const handleSpeakBrief = async () => {
+    // If already playing audio via Audio element, stop it
+    if (activeAudioRef.current) {
+      activeAudioRef.current.pause();
+      activeAudioRef.current = null;
+      setSpeaking(false);
+      return;
+    }
+
+    // If speaking via browser SpeechSynthesis, stop it
+    if (typeof window !== "undefined" && window.speechSynthesis && speaking) {
       window.speechSynthesis.cancel();
       setSpeaking(false);
       return;
     }
-    window.speechSynthesis.cancel();
-    const textToSpeak = `${report.brief || report.impression || "No impression available."}`;
-    const utterance = new SpeechSynthesisUtterance(textToSpeak);
-    const langCode = LANG_VOICES[report.language] || "en-US";
-    utterance.lang = langCode;
 
-    const voices = window.speechSynthesis.getVoices ? window.speechSynthesis.getVoices() : [];
-    const matchedVoice = voices.find(
-      (v) => v.lang === langCode || v.lang.startsWith(langCode.slice(0, 2))
-    );
-    if (matchedVoice) utterance.voice = matchedVoice;
+    const raw = report.brief || report.impression || "No clinical brief available.";
+    const textToSpeak = cleanTextForSpeech(raw);
+    if (!textToSpeak) return;
 
-    utterance.onend = () => setSpeaking(false);
-    utterance.onerror = () => setSpeaking(false);
     setSpeaking(true);
-    window.speechSynthesis.speak(utterance);
+
+    // Try high-fidelity server TTS first (fluent natural human voice in Gujarati, Marathi, Hindi, English)
+    try {
+      const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
+      const resp = await fetch(`${API}/synthesize-speech`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: textToSpeak,
+          language: report.language || "English",
+        }),
+      });
+
+      if (resp.ok) {
+        const audioBlob = await resp.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
+        activeAudioRef.current = audio;
+
+        audio.onended = () => {
+          setSpeaking(false);
+          activeAudioRef.current = null;
+          URL.revokeObjectURL(audioUrl);
+        };
+        audio.onerror = () => {
+          setSpeaking(false);
+          activeAudioRef.current = null;
+          URL.revokeObjectURL(audioUrl);
+        };
+
+        await audio.play();
+        return;
+      }
+    } catch (err) {
+      console.warn("[Server TTS error, falling back to browser synthesis]", err);
+    }
+
+    // Fallback: Browser Web Speech API
+    if (typeof window === "undefined" || !window.speechSynthesis) {
+      setSpeaking(false);
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+    }
+
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    currentUtteranceRef.current = utterance;
+    const langTag = getLanguageTag(report.language, textToSpeak);
+    utterance.lang = langTag;
+
+    utterance.rate = 0.95;
+    utterance.pitch = 1.0;
+
+    utterance.onstart = () => setSpeaking(true);
+    utterance.onend = () => {
+      setSpeaking(false);
+      currentUtteranceRef.current = null;
+    };
+    utterance.onerror = () => {
+      setSpeaking(false);
+      currentUtteranceRef.current = null;
+    };
+
+    setTimeout(() => {
+      try {
+        if (window.speechSynthesis.paused) window.speechSynthesis.resume();
+        window.speechSynthesis.speak(utterance);
+      } catch {
+        setSpeaking(false);
+      }
+    }, 50);
   };
 
   const handleCopyText = (text, sectionName) => {
