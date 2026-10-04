@@ -440,10 +440,16 @@ export default function ResearchMetricsModal({ isOpen, onClose }) {
                           {row.pathology}
                         </td>
                         <td style={{ padding: "11px 14px", fontFamily: "var(--font-mono)", color: "#38bdf8", fontWeight: 700 }}>
-                          {row.auroc.toFixed(3)}
+                          <div>{row.auroc.toFixed(3)}</div>
+                          <div style={{ height: 4, width: 68, background: "rgba(30, 41, 59, 0.8)", borderRadius: 999, overflow: "hidden", marginTop: 4 }}>
+                            <div style={{ height: "100%", width: `${row.auroc * 100}%`, background: "linear-gradient(90deg, #06b6d4 0%, #38bdf8 45%, #10b981 100%)", borderRadius: 999 }} />
+                          </div>
                         </td>
                         <td style={{ padding: "11px 14px", fontFamily: "var(--font-mono)" }}>
-                          {row.sensitivity.toFixed(1)}%
+                          <div>{row.sensitivity.toFixed(1)}%</div>
+                          <div style={{ height: 4, width: 68, background: "rgba(30, 41, 59, 0.8)", borderRadius: 999, overflow: "hidden", marginTop: 4 }}>
+                            <div style={{ height: "100%", width: `${row.sensitivity}%`, background: "linear-gradient(90deg, #06b6d4 0%, #38bdf8 45%, #10b981 100%)", borderRadius: 999 }} />
+                          </div>
                         </td>
                         <td style={{ padding: "11px 14px", fontFamily: "var(--font-mono)" }}>
                           {row.specificity.toFixed(1)}%
@@ -572,9 +578,9 @@ export default function ResearchMetricsModal({ isOpen, onClose }) {
                     </div>
                     <div
                       style={{
-                        height: 8,
-                        borderRadius: 4,
-                        background: "rgba(148, 163, 184, 0.12)",
+                        height: 5,
+                        borderRadius: 999,
+                        background: "rgba(30, 41, 59, 0.8)",
                         overflow: "hidden",
                       }}
                     >
@@ -582,8 +588,9 @@ export default function ResearchMetricsModal({ isOpen, onClose }) {
                         style={{
                           height: "100%",
                           width: step.width,
-                          borderRadius: 4,
-                          background: step.color,
+                          borderRadius: 999,
+                          background: "linear-gradient(90deg, #06b6d4 0%, #10b981 20%, #f59e0b 55%, #ef4444 100%)",
+                          boxShadow: "0 0 8px rgba(239, 68, 68, 0.4)",
                           transition: "width 0.6s ease",
                         }}
                       />

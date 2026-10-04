@@ -1037,18 +1037,33 @@ export default function ImageDropzone({
               background: "rgba(6, 182, 212, 0.08)",
               border: "1px solid rgba(6, 182, 212, 0.25)",
               borderRadius: "8px",
-              padding: "8px 12px",
+              padding: "10px 12px",
               display: "flex",
-              alignItems: "center",
+              flexDirection: "column",
               gap: 8,
               fontSize: 11.5,
               color: "var(--color-cyan)",
             }}
           >
-            <Activity size={14} className="mvlm-status-dot active" />
-            <span style={{ fontFamily: "var(--font-mono)" }}>
-              {currentStage || "Processing pipeline cascade..."}
-            </span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Activity size={14} className="mvlm-status-dot active" />
+              <span style={{ fontFamily: "var(--font-mono)" }}>
+                {currentStage || "Processing pipeline cascade..."}
+              </span>
+            </div>
+            {/* Animated Warm-to-Cyan Streaming Bar */}
+            <div
+              style={{
+                width: "100%",
+                height: 4,
+                background: "rgba(30, 41, 59, 0.8)",
+                borderRadius: 999,
+                overflow: "hidden",
+                position: "relative",
+              }}
+            >
+              <div className="mvlm-streaming-gradient-bar" />
+            </div>
           </div>
         )}
       </div>

@@ -1,0 +1,844 @@
+/* ==========================================================================
+   MedVLM Studio - Hero Clinical Workstation Mockup Styles
+   ========================================================================== */
+
+.mvlm-mockup-frame {
+  position: relative;
+  width: 100%;
+  background: #070b14;
+  border-radius: 16px;
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9), 0 0 50px rgba(6, 182, 212, 0.12);
+  overflow: hidden;
+  text-align: left;
+  user-select: none;
+}
+
+/* --------------------------------------------------------------------------
+   Top Application Navigation Bar
+   -------------------------------------------------------------------------- */
+.mvlm-mockup-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: rgba(13, 20, 36, 0.95);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.mvlm-mockup-top-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mvlm-mockup-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mvlm-mockup-dots .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.mvlm-mockup-dots .dot.red {
+  background: #ef4444;
+}
+
+.mvlm-mockup-dots .dot.amber {
+  background: #f59e0b;
+}
+
+.mvlm-mockup-dots .dot.green {
+  background: #10b981;
+}
+
+.mvlm-mockup-app-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #f1f5f9;
+}
+
+.mvlm-mockup-app-title .bold {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.mvlm-mockup-app-title .badge {
+  font-size: 10px;
+  font-family: var(--font-mono, monospace);
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(6, 182, 212, 0.12);
+  color: #06b6d4;
+  border: 1px solid rgba(6, 182, 212, 0.25);
+}
+
+/* Study Selector Tabs */
+.mvlm-mockup-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(8, 12, 22, 0.6);
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.mvlm-mockup-tab-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mvlm-mockup-tab-pill:hover {
+  color: #f8fafc;
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.mvlm-mockup-tab-pill.active {
+  background: rgba(6, 182, 212, 0.15);
+  border-color: rgba(6, 182, 212, 0.4);
+  color: #38bdf8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.mvlm-mockup-tab-pill .status-pill {
+  font-size: 9.5px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+/* Top Right Telemetry */
+.mvlm-mockup-top-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-family: var(--font-mono, monospace);
+  color: #10b981;
+}
+
+.pulse-indicator {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 10px #10b981;
+  animation: pulseGlow 2s infinite ease-in-out;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   3-Column Workstation Grid
+   -------------------------------------------------------------------------- */
+.mvlm-mockup-grid {
+  display: grid;
+  grid-template-columns: 36% 38% 26%;
+  background: #050811;
+  min-height: 530px;
+}
+
+.mvlm-mockup-col {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-right: 1px solid rgba(148, 163, 184, 0.09);
+}
+
+.mvlm-mockup-col:last-child {
+  border-right: none;
+}
+
+/* --------------------------------------------------------------------------
+   COLUMN 1: PACS Radiology Viewport
+   -------------------------------------------------------------------------- */
+.mvlm-col-viewport {
+  background: #03050a;
+}
+
+.mvlm-viewport-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.viewport-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono, monospace);
+  font-size: 10.5px;
+}
+
+.viewport-meta .tag-mono {
+  color: #38bdf8;
+  font-weight: 700;
+}
+
+.viewport-meta .dim {
+  color: #475569;
+}
+
+.viewport-meta .tag-sub {
+  color: #94a3b8;
+}
+
+.cam-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  font-size: 10.5px;
+  border-radius: 4px;
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  background: rgba(6, 182, 212, 0.1);
+  color: #38bdf8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cam-toggle-btn:hover {
+  background: rgba(6, 182, 212, 0.2);
+}
+
+.cam-toggle-btn.active {
+  background: rgba(6, 182, 212, 0.25);
+  border-color: #06b6d4;
+  color: #f0fdfa;
+  box-shadow: 0 0 8px rgba(6, 182, 212, 0.3);
+}
+
+/* Radiograph Screen Display */
+.mvlm-radiograph-screen {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: #000000;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8);
+}
+
+.mvlm-radiograph-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: contrast(1.1) brightness(0.95);
+  display: block;
+}
+
+/* Continuous Scanning Laser Line */
+.mvlm-laser-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.9), transparent);
+  box-shadow: 0 0 12px #06b6d4, 0 0 20px rgba(6, 182, 212, 0.5);
+  animation: laserSweep 4s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 4;
+}
+
+@keyframes laserSweep {
+  0% {
+    top: 5%;
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    top: 92%;
+    opacity: 0.7;
+  }
+}
+
+/* Grad-CAM Saliency Heatmaps (CSS Radial Gradient Simulation) */
+.mvlm-heatmap-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  transition: opacity 0.4s ease;
+  z-index: 2;
+}
+
+/* Heatmap for RLL (Patient Right = Screen Left, lower lobe) */
+.mvlm-heatmap-layer.heatmap-rll {
+  background: radial-gradient(
+    circle at 35% 72%,
+    rgba(239, 68, 68, 0.7) 0%,
+    rgba(245, 158, 11, 0.55) 28%,
+    rgba(6, 182, 212, 0.35) 48%,
+    transparent 68%
+  );
+  filter: blur(8px);
+}
+
+/* Heatmap for Cardiomegaly (Central and left apex enlargement) */
+.mvlm-heatmap-layer.heatmap-cardiac {
+  background: radial-gradient(
+    ellipse at 50% 64%,
+    rgba(249, 115, 22, 0.65) 0%,
+    rgba(239, 68, 68, 0.5) 30%,
+    rgba(6, 182, 212, 0.3) 55%,
+    transparent 72%
+  );
+  filter: blur(10px);
+}
+
+.mvlm-heatmap-layer.heatmap-none {
+  opacity: 0;
+}
+
+/* High-Tech Anatomical Bounding HUD Box */
+.mvlm-hud-box {
+  position: absolute;
+  border: 1px dashed rgba(6, 182, 212, 0.6);
+  background: rgba(6, 182, 212, 0.05);
+  z-index: 3;
+  pointer-events: none;
+  box-shadow: 0 0 14px rgba(6, 182, 212, 0.2);
+  transition: all 0.3s ease;
+}
+
+.hud-corner {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-color: #38bdf8;
+  border-style: solid;
+}
+
+.hud-corner.top-left {
+  top: -1px;
+  left: -1px;
+  border-width: 2px 0 0 2px;
+}
+
+.hud-corner.top-right {
+  top: -1px;
+  right: -1px;
+  border-width: 2px 2px 0 0;
+}
+
+.hud-corner.bottom-left {
+  bottom: -1px;
+  left: -1px;
+  border-width: 0 0 2px 2px;
+}
+
+.hud-corner.bottom-right {
+  bottom: -1px;
+  right: -1px;
+  border-width: 0 2px 2px 0;
+}
+
+.hud-target-marker {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.7;
+}
+
+.hud-label-tag {
+  position: absolute;
+  bottom: -28px;
+  left: 0;
+  background: rgba(9, 14, 27, 0.92);
+  border: 1px solid rgba(6, 182, 212, 0.4);
+  border-radius: 4px;
+  padding: 3px 6px;
+  white-space: nowrap;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.hud-label-tag .hud-title {
+  font-family: var(--font-mono, monospace);
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #38bdf8;
+}
+
+.hud-label-tag .hud-sub {
+  font-size: 8px;
+  color: #94a3b8;
+}
+
+/* DICOM Corner HUD Overlays */
+.dicom-corner {
+  position: absolute;
+  font-family: var(--font-mono, monospace);
+  font-size: 8.5px;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.25;
+  pointer-events: none;
+  z-index: 3;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+.dicom-corner .dim {
+  color: rgba(148, 163, 184, 0.7);
+}
+
+.dicom-corner.top-left {
+  top: 8px;
+  left: 8px;
+}
+
+.dicom-corner.top-right {
+  top: 8px;
+  right: 8px;
+  text-align: right;
+}
+
+.dicom-corner.bottom-left {
+  bottom: 8px;
+  left: 8px;
+}
+
+.dicom-corner.bottom-right {
+  bottom: 8px;
+  right: 8px;
+  text-align: right;
+}
+
+.dicom-corner .hud-green {
+  color: #10b981;
+  font-weight: 700;
+}
+
+/* Viewport Footer */
+.mvlm-viewport-foot {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9.5px;
+  color: #64748b;
+  font-family: var(--font-mono, monospace);
+  padding-top: 4px;
+}
+
+.mvlm-viewport-foot .lbl {
+  color: #475569;
+  margin-right: 4px;
+}
+
+.mvlm-viewport-foot .val {
+  color: #94a3b8;
+}
+
+/* --------------------------------------------------------------------------
+   COLUMN 2: Dual-Engine Findings & Clinical Reasoning
+   -------------------------------------------------------------------------- */
+.mvlm-col-report {
+  background: #080d19;
+}
+
+.mvlm-col-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.header-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #f1f5f9;
+  letter-spacing: -0.01em;
+}
+
+.header-badge {
+  font-size: 9.5px;
+  font-family: var(--font-mono, monospace);
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(6, 182, 212, 0.1);
+  color: #38bdf8;
+  border: 1px solid rgba(6, 182, 212, 0.25);
+}
+
+/* Predictions Card */
+.mvlm-predictions-card {
+  background: rgba(14, 22, 38, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 8px;
+  padding: 9px 12px;
+}
+
+.predictions-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #64748b;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin-bottom: 7px;
+}
+
+.predictions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.prediction-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.pred-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+}
+
+.pred-name {
+  color: #cbd5e1;
+  font-weight: 500;
+}
+
+.pred-prob {
+  font-family: var(--font-mono, monospace);
+  font-weight: 700;
+  font-size: 11px;
+}
+
+.pred-bar-track {
+  width: 100%;
+  height: 4px;
+  background: rgba(30, 41, 59, 0.8);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.pred-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+/* Gemini Reasoning Section */
+.mvlm-reasoning-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.findings-card,
+.impression-card {
+  padding: 9px 11px;
+  border-radius: 7px;
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.impression-card {
+  background: rgba(6, 182, 212, 0.05);
+  border-color: rgba(6, 182, 212, 0.25);
+}
+
+.card-kicker {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.card-kicker.highlight {
+  color: #38bdf8;
+}
+
+.card-body-text {
+  font-size: 11.5px;
+  color: #94a3b8;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.card-body-text.highlight {
+  color: #f1f5f9;
+  font-weight: 500;
+}
+
+/* Zone Chips Grid */
+.zone-chips-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.zone-chips-label {
+  font-size: 9.5px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.zone-chips-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.zone-chip {
+  padding: 3px 5px;
+  border-radius: 4px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  font-size: 9.5px;
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.zone-chip .zone-code {
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.zone-chip .zone-val {
+  color: #64748b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zone-chip.alert {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+.zone-chip.alert .zone-code {
+  color: #f59e0b;
+}
+
+.zone-chip.alert .zone-val {
+  color: #fde68a;
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   COLUMN 3: AI Clinical Co-Pilot & Action Terminal
+   -------------------------------------------------------------------------- */
+.mvlm-col-copilot {
+  background: #090e1a;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.copilot-chat-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chat-bubble {
+  padding: 8px 10px;
+  border-radius: 7px;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.chat-bubble.user {
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.chat-bubble.user .bubble-author {
+  font-size: 8.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 3px;
+}
+
+.chat-bubble.user p {
+  margin: 0;
+  color: #cbd5e1;
+}
+
+.chat-bubble.ai {
+  background: rgba(6, 182, 212, 0.08);
+  border: 1px solid rgba(6, 182, 212, 0.28);
+}
+
+.chat-bubble.ai .bubble-author {
+  font-size: 8.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #38bdf8;
+  margin-bottom: 3px;
+}
+
+.chat-bubble.ai p {
+  margin: 0;
+  color: #f8fafc;
+}
+
+.clinical-action-box {
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 6px;
+  padding: 7px 9px;
+}
+
+.action-kicker {
+  font-size: 8.5px;
+  font-weight: 700;
+  color: #10b981;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 3px;
+}
+
+.action-text {
+  font-size: 10.5px;
+  color: #a7f3d0;
+  margin: 0;
+  line-height: 1.35;
+}
+
+/* Hybrid Safety Seal */
+.safety-arbiter-seal {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(14, 22, 38, 0.7);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 8px;
+  margin-top: 6px;
+}
+
+.seal-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(16, 185, 129, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.seal-details .seal-title {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #34d399;
+}
+
+.seal-details .seal-sub {
+  font-size: 9px;
+  color: #64748b;
+  line-height: 1.25;
+}
+
+/* Mockup Studio Launch Button */
+.mvlm-mockup-launch-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(6, 182, 212, 0.25);
+  transition: all 0.2s ease;
+  margin-top: 8px;
+}
+
+.mvlm-mockup-launch-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
+  background: linear-gradient(135deg, #0369a1 0%, #0891b2 100%);
+}
+
+/* --------------------------------------------------------------------------
+   Responsive Adaptations
+   -------------------------------------------------------------------------- */
+@media (max-width: 1100px) {
+  .mvlm-mockup-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .mvlm-col-copilot {
+    grid-column: span 2;
+    border-top: 1px solid rgba(148, 163, 184, 0.1);
+  }
+}
+
+@media (max-width: 768px) {
+  .mvlm-mockup-topbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .mvlm-mockup-tabs {
+    width: 100%;
+    overflow-x: auto;
+  }
+  .mvlm-mockup-grid {
+    grid-template-columns: 1fr;
+  }
+  .mvlm-col-copilot {
+    grid-column: span 1;
+  }
+  .mvlm-mockup-col {
+    border-right: none;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  }
+}

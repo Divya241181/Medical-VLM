@@ -108,36 +108,52 @@ function AppContent() {
           {/* Clinical Radiologist Masthead */}
           <header className="mvlm-header">
             {/* Left: Brand Identity & Navigation */}
-            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 14, flexShrink: 0, minWidth: 0 }}>
               <div
-                style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  cursor: "pointer",
+                  flexShrink: 0,
+                  userSelect: "none",
+                }}
                 onClick={() => navigateTo("landing")}
                 title="Return to Landing Page"
               >
                 <div
                   style={{
-                    width: 38,
-                    height: 38,
-                    borderRadius: "10px",
+                    width: 42,
+                    height: 42,
+                    minWidth: 42,
+                    minHeight: 42,
+                    borderRadius: "11px",
                     background: "#090d16",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    boxShadow: "0 0 16px rgba(6, 182, 212, 0.4)",
-                    border: "1px solid rgba(6, 182, 212, 0.3)",
+                    boxShadow: "0 0 16px rgba(6, 182, 212, 0.45), inset 0 0 6px rgba(6, 182, 212, 0.15)",
+                    border: "1px solid rgba(6, 182, 212, 0.35)",
                     position: "relative",
                     overflow: "hidden",
+                    flexShrink: 0,
+                    padding: 3,
                   }}
                 >
                   <img
                     src={medvlmLogo}
                     alt="MedVLM Logo"
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "contain",
+                      display: "block",
+                    }}
                   />
                 </div>
 
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", flexShrink: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, whiteSpace: "nowrap" }}>
                     <span
                       style={{
                         fontSize: 17,
@@ -145,6 +161,8 @@ function AppContent() {
                         color: "#f8fafc",
                         fontFamily: "var(--font-display)",
                         letterSpacing: "-0.02em",
+                        whiteSpace: "nowrap",
+                        lineHeight: 1.2,
                       }}
                     >
                       MedVLM <span style={{ color: "var(--color-cyan)" }}>Studio</span>
@@ -159,18 +177,23 @@ function AppContent() {
                         border: "1px solid rgba(6, 182, 212, 0.28)",
                         padding: "2px 7px",
                         borderRadius: "6px",
+                        whiteSpace: "nowrap",
+                        lineHeight: 1.2,
                       }}
                     >
                       v4.2 CDS
                     </span>
                   </div>
                   <div
-                    className="mvlm-hide-mobile"
+                    className="mvlm-hide-subheading"
                     style={{
-                      fontSize: 11.5,
+                      fontSize: 11,
                       color: "var(--text-muted)",
                       fontWeight: 500,
                       letterSpacing: "0.01em",
+                      whiteSpace: "nowrap",
+                      lineHeight: 1.2,
+                      marginTop: 2,
                     }}
                   >
                     Clinical Multi-Agent Radiology Workstation
@@ -179,16 +202,16 @@ function AppContent() {
               </div>
 
               <div
-                className="mvlm-hide-mobile"
-                style={{ width: 1, height: 22, background: "rgba(148, 163, 184, 0.15)", margin: "0 4px" }}
+                className="mvlm-hide-tablet"
+                style={{ width: 1, height: 22, background: "rgba(148, 163, 184, 0.15)", margin: "0 2px" }}
               />
 
               {/* Home / Overview Shortcut */}
               <button
                 onClick={() => navigateTo("landing")}
-                className="mvlm-btn-secondary mvlm-hide-mobile"
+                className="mvlm-btn-secondary"
                 title="Return to Product Overview & Showcase"
-                style={{ padding: "6px 12px", fontSize: 12, borderRadius: 20 }}
+                style={{ padding: "6px 12px", fontSize: 12, borderRadius: 20, flexShrink: 0, whiteSpace: "nowrap" }}
               >
                 <Home size={13} color="var(--color-cyan)" />
                 <span>Overview</span>
@@ -196,7 +219,7 @@ function AppContent() {
 
               {/* PACS Integration Indicator */}
               <div
-                className="mvlm-hide-mobile"
+                className="mvlm-hide-tablet"
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -207,6 +230,8 @@ function AppContent() {
                   border: "1px solid rgba(148, 163, 184, 0.12)",
                   fontSize: 11.5,
                   color: "var(--text-muted)",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
                 }}
               >
                 <Database size={13} color="var(--color-cyan)" />
@@ -215,7 +240,7 @@ function AppContent() {
             </div>
 
             {/* Right: Clinician Identity, Research Metrics, Archive */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
               {/* Live Model Stack Pill */}
               <div
                 className="mvlm-hide-mobile"
@@ -230,11 +255,13 @@ function AppContent() {
                   fontSize: 12,
                   fontWeight: 600,
                   color: "#34d399",
+                  flexShrink: 0,
+                  whiteSpace: "nowrap",
                 }}
               >
                 <span className="mvlm-status-dot active" />
                 <span style={{ fontFamily: "var(--font-mono)", fontSize: 11.5 }}>
-                  DenseNet-121 + Gemini 3.8 Flash
+                  <span className="mvlm-hide-tablet">DenseNet-121 + </span>Gemini 3.8 Flash
                 </span>
               </div>
 
@@ -247,10 +274,12 @@ function AppContent() {
                   padding: "7px 11px",
                   borderColor: "rgba(6, 182, 212, 0.4)",
                   background: "rgba(6, 182, 212, 0.08)",
+                  flexShrink: 0,
+                  whiteSpace: "nowrap",
                 }}
               >
                 <BarChart3 size={14} color="var(--color-cyan)" />
-                <span><span className="mvlm-hide-mobile">Research </span>Metrics</span>
+                <span><span className="mvlm-hide-tablet">Research </span>Metrics</span>
               </button>
 
               {/* Clinical Safety Notice Trigger */}
@@ -258,7 +287,7 @@ function AppContent() {
                 onClick={() => setDisclaimerOpen(true)}
                 title="Clinical Guidelines & Safety Notice"
                 className="mvlm-btn-secondary"
-                style={{ padding: "7px 11px" }}
+                style={{ padding: "7px 11px", flexShrink: 0, whiteSpace: "nowrap" }}
               >
                 <ShieldAlert size={14} color="var(--color-cyan)" />
                 <span className="mvlm-hide-mobile">Safety</span>
@@ -271,10 +300,12 @@ function AppContent() {
                 style={{
                   borderColor: history.length > 0 ? "rgba(6, 182, 212, 0.3)" : undefined,
                   padding: "7px 11px",
+                  flexShrink: 0,
+                  whiteSpace: "nowrap",
                 }}
               >
                 <Clock size={14} color="var(--color-cyan)" />
-                <span><span className="mvlm-hide-mobile">Studies </span>Archive</span>
+                <span><span className="mvlm-hide-tablet">Studies </span>Archive</span>
                 {history.length > 0 && (
                   <span
                     style={{
@@ -294,7 +325,7 @@ function AppContent() {
               </button>
 
               {/* Authenticated Doctor Profile Widget */}
-              <div style={{ position: "relative" }} ref={userMenuRef}>
+              <div style={{ position: "relative", flexShrink: 0 }} ref={userMenuRef}>
                 {user ? (
                   <button
                     onClick={() => setUserMenuOpen(!userMenuOpen)}

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import medvlmLogo from "../assets/medvlm-logo.png";
-import heroRadiologyImg from "../assets/hero-radiology.jpg";
+import HeroWorkstationMockup from "./HeroWorkstationMockup";
 import {
   Activity,
   ShieldCheck,
@@ -261,71 +261,8 @@ export default function LandingPage({ onLaunchStudio, onOpenMetrics }) {
           )}
         </div>
 
-        {/* Hero Visual Display with Radiologist Mockup */}
-        <div className="mvlm-hero-visual-card">
-          <div className="mvlm-hero-visual-header">
-            <div className="mvlm-window-dots">
-              <div className="mvlm-window-dot" style={{ background: "#ef4444" }} />
-              <div className="mvlm-window-dot" style={{ background: "#f59e0b" }} />
-              <div className="mvlm-window-dot" style={{ background: "#10b981" }} />
-            </div>
-            <div style={{ fontSize: 11, fontFamily: "var(--font-mono)", color: "#94a3b8" }}>
-              PACS / DICOM Diagnostic Viewport — MedVLM Studio v4.2
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "#10b981" }}>
-              <span className="mvlm-status-dot active" />
-              <span>Live Inference Pipeline Active</span>
-            </div>
-          </div>
-
-          <div className="mvlm-hero-img-wrap">
-            <img src={heroRadiologyImg} alt="Radiologist using MedVLM clinical workstation" />
-            <div className="mvlm-hero-img-overlay" />
-
-            {/* Floating Telemetry Badges */}
-            <div className="mvlm-float-tag top-right">
-              <div
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 8,
-                  background: "rgba(6, 182, 212, 0.15)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#06b6d4",
-                }}
-              >
-                <Cpu size={16} />
-              </div>
-              <div>
-                <div className="mvlm-float-tag-title">TorchXRayVision DenseNet-121</div>
-                <div className="mvlm-float-tag-sub">14 Pathologies Scanned in 240ms</div>
-              </div>
-            </div>
-
-            <div className="mvlm-float-tag bottom-left">
-              <div
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 8,
-                  background: "rgba(16, 185, 129, 0.15)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#10b981",
-                }}
-              >
-                <BrainCircuit size={16} />
-              </div>
-              <div>
-                <div className="mvlm-float-tag-title">Gemini 3.8 Flash Multimodal Reasoning</div>
-                <div className="mvlm-float-tag-sub">Structured Clinical Report & Differential</div>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Hero Visual Display: Interactive 3-Column MedVLM Clinical Workstation Mockup */}
+        <HeroWorkstationMockup onLaunchStudio={onLaunchStudio} />
       </section>
 
       {/* Quantitative Metrics Strip */}
@@ -479,8 +416,15 @@ export default function LandingPage({ onLaunchStudio, onOpenMetrics }) {
                           style={{
                             width: `${pred.prob}%`,
                             background: pred.match
-                              ? "linear-gradient(90deg, #06b6d4, #0284c7)"
-                              : "rgba(148, 163, 184, 0.3)",
+                              ? pred.prob >= 75
+                                ? "linear-gradient(90deg, #06b6d4 0%, #10b981 20%, #f59e0b 55%, #ef4444 100%)"
+                                : "linear-gradient(90deg, #06b6d4 0%, #38bdf8 35%, #f59e0b 100%)"
+                              : "linear-gradient(90deg, rgba(148, 163, 184, 0.2) 0%, rgba(6, 182, 212, 0.3) 100%)",
+                            boxShadow: pred.match
+                              ? pred.prob >= 75
+                                ? "0 0 10px rgba(239, 68, 68, 0.45)"
+                                : "0 0 8px rgba(245, 158, 11, 0.35)"
+                              : "none",
                           }}
                         />
                       </div>

@@ -871,19 +871,24 @@ export default function ClinicalReportView({
                     const pct = Math.round(score * 100);
                     const isHigh = pct >= 50;
                     const isMed = pct >= 25 && pct < 50;
-                    const barColor = isHigh ? "#ef4444" : isMed ? "#f59e0b" : "#10b981";
+                    const labelColor = isHigh ? "#ef4444" : isMed ? "#f59e0b" : "#10b981";
+                    const gradientFill = isHigh
+                      ? "linear-gradient(90deg, #06b6d4 0%, #10b981 20%, #f59e0b 55%, #ef4444 100%)"
+                      : isMed
+                      ? "linear-gradient(90deg, #06b6d4 0%, #38bdf8 35%, #f59e0b 100%)"
+                      : "linear-gradient(90deg, #10b981 0%, #06b6d4 100%)";
 
                     return (
                       <div
                         key={idx}
                         style={{
                           background: "rgba(15, 23, 42, 0.5)",
-                          borderRadius: "5px",
-                          padding: "4px 7px",
-                          border: `1px solid ${pct >= 25 ? "rgba(249, 115, 22, 0.25)" : "rgba(148, 163, 184, 0.08)"}`,
+                          borderRadius: "6px",
+                          padding: "5px 8px",
+                          border: `1px solid ${isHigh ? "rgba(239, 68, 68, 0.3)" : isMed ? "rgba(245, 158, 11, 0.25)" : "rgba(148, 163, 184, 0.08)"}`,
                         }}
                       >
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 2 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
                           <span style={{ fontSize: 12, fontWeight: pct >= 25 ? 700 : 500, color: pct >= 25 ? "#ffffff" : "var(--text-secondary)" }}>
                             {item.condition}
                           </span>
@@ -892,7 +897,7 @@ export default function ClinicalReportView({
                               fontSize: 11.5,
                               fontFamily: "var(--font-mono)",
                               fontWeight: 700,
-                              color: barColor,
+                              color: labelColor,
                             }}
                           >
                             {pct}%
@@ -902,9 +907,9 @@ export default function ClinicalReportView({
                         {/* Progress Bar Track */}
                         <div
                           style={{
-                            height: 3.5,
-                            background: "rgba(148, 163, 184, 0.15)",
-                            borderRadius: "2px",
+                            height: 4,
+                            background: "rgba(30, 41, 59, 0.8)",
+                            borderRadius: "999px",
                             overflow: "hidden",
                           }}
                         >
@@ -912,9 +917,10 @@ export default function ClinicalReportView({
                             style={{
                               height: "100%",
                               width: `${pct}%`,
-                              background: barColor,
-                              borderRadius: "2px",
-                              transition: "width 0.6s ease",
+                              background: gradientFill,
+                              borderRadius: "999px",
+                              boxShadow: isHigh ? "0 0 8px rgba(239, 68, 68, 0.45)" : isMed ? "0 0 6px rgba(245, 158, 11, 0.35)" : "none",
+                              transition: "width 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
                             }}
                           />
                         </div>
