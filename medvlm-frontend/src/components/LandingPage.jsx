@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import medvlmLogo from "../assets/medvlm-logo.png";
 import HeroWorkstationMockup from "./HeroWorkstationMockup";
@@ -142,6 +142,70 @@ export default function LandingPage({ onLaunchStudio, onOpenMetrics }) {
   const { user, openAuthModal } = useAuth();
   const [activeCase, setActiveCase] = useState(SIMULATED_CASES[0]);
   const [openFaq, setOpenFaq] = useState(0);
+  const [activeSection, setActiveSection] = useState("");
+  const isManualScrollRef = useRef(false);
+  const scrollTimeoutRef = useRef(null);
+
+  const handleSmoothScroll = (e, targetId) => {
+    if (e) e.preventDefault();
+    // Instantly update active indicator with 0ms lag
+    setActiveSection(targetId);
+    isManualScrollRef.current = true;
+
+    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+    scrollTimeoutRef.current = setTimeout(() => {
+      isManualScrollRef.current = false;
+    }, 850);
+
+    const target = document.getElementById(targetId);
+    if (target) {
+      const navOffset = 76;
+      const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - navOffset;
+      window.scrollTo({
+        top: targetPosition,
+        behavior: "smooth",
+      });
+      window.history.pushState(null, "", `#${targetId}`);
+    }
+  };
+
+  useEffect(() => {
+    const sectionIds = ["simulator", "architecture", "validation", "security", "faq"];
+    let ticking = false;
+
+    const handleScroll = () => {
+      // Don't fight with manual button clicks while scrolling
+      if (isManualScrollRef.current) return;
+
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          if (isManualScrollRef.current) {
+            ticking = false;
+            return;
+          }
+          const scrollPos = window.scrollY + 120;
+          let current = "";
+          for (let i = sectionIds.length - 1; i >= 0; i--) {
+            const el = document.getElementById(sectionIds[i]);
+            if (el && el.offsetTop <= scrollPos) {
+              current = sectionIds[i];
+              break;
+            }
+          }
+          setActiveSection((prev) => (prev !== current ? current : prev));
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+    };
+  }, []);
 
   return (
     <div className="mvlm-landing-wrapper">
@@ -162,19 +226,39 @@ export default function LandingPage({ onLaunchStudio, onOpenMetrics }) {
         </div>
 
         <div className="mvlm-landing-links">
-          <a href="#simulator" className="mvlm-landing-link">
+          <a
+            href="#simulator"
+            className={`mvlm-landing-link ${activeSection === "simulator" ? "active" : ""}`}
+            onClick={(e) => handleSmoothScroll(e, "simulator")}
+          >
             Live Showcase
           </a>
-          <a href="#architecture" className="mvlm-landing-link">
+          <a
+            href="#architecture"
+            className={`mvlm-landing-link ${activeSection === "architecture" ? "active" : ""}`}
+            onClick={(e) => handleSmoothScroll(e, "architecture")}
+          >
             Cascade Engine
           </a>
-          <a href="#validation" className="mvlm-landing-link">
+          <a
+            href="#validation"
+            className={`mvlm-landing-link ${activeSection === "validation" ? "active" : ""}`}
+            onClick={(e) => handleSmoothScroll(e, "validation")}
+          >
             AUROC Validation
           </a>
-          <a href="#security" className="mvlm-landing-link">
+          <a
+            href="#security"
+            className={`mvlm-landing-link ${activeSection === "security" ? "active" : ""}`}
+            onClick={(e) => handleSmoothScroll(e, "security")}
+          >
             Trust & Security
           </a>
-          <a href="#faq" className="mvlm-landing-link">
+          <a
+            href="#faq"
+            className={`mvlm-landing-link ${activeSection === "faq" ? "active" : ""}`}
+            onClick={(e) => handleSmoothScroll(e, "faq")}
+          >
             FAQ
           </a>
         </div>
@@ -764,10 +848,10 @@ export default function LandingPage({ onLaunchStudio, onOpenMetrics }) {
             </div>
 
             <div style={{ display: "flex", gap: 20, fontSize: 12, color: "#94a3b8" }}>
-              <a href="#simulator" className="mvlm-landing-link" style={{ fontSize: 12 }}>Showcase</a>
-              <a href="#architecture" className="mvlm-landing-link" style={{ fontSize: 12 }}>Architecture</a>
-              <a href="#validation" className="mvlm-landing-link" style={{ fontSize: 12 }}>AUROC Validation</a>
-              <a href="#security" className="mvlm-landing-link" style={{ fontSize: 12 }}>Compliance</a>
+              <a href="#simulator" className="mvlm-landing-link" onClick={(e) => handleSmoothScroll(e, "simulator")} style={{ fontSize: 12 }}>Showcase</a>
+              <a href="#architecture" className="mvlm-landing-link" onClick={(e) => handleSmoothScroll(e, "architecture")} style={{ fontSize: 12 }}>Architecture</a>
+              <a href="#validation" className="mvlm-landing-link" onClick={(e) => handleSmoothScroll(e, "validation")} style={{ fontSize: 12 }}>AUROC Validation</a>
+              <a href="#security" className="mvlm-landing-link" onClick={(e) => handleSmoothScroll(e, "security")} style={{ fontSize: 12 }}>Compliance</a>
             </div>
           </div>
 

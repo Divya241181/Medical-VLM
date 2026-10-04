@@ -104,7 +104,7 @@ function AppContent() {
         />
       ) : (
         /* View 2: Full Clinical Diagnostic Studio */
-        <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        <div className="mvlm-studio-container">
           {/* Clinical Radiologist Masthead */}
           <header className="mvlm-header">
             {/* Left: Brand Identity & Navigation */}
